@@ -130,6 +130,14 @@ class VersionOut(CamelModel):
     source: str
 
 
+class VersionUploadOut(VersionOut):
+    sha256: str
+    relative_path: str
+    byte_size: int = Field(ge=1)
+    media_type: str
+    revision: int = Field(ge=0)
+
+
 class AssetLinkPayload(CamelModel):
     shot_id: str
     asset_id: str

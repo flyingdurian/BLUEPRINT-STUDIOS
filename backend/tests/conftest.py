@@ -7,7 +7,8 @@ from app.main import create_app
 
 
 @pytest.fixture
-def client(tmp_path):
+def client(tmp_path, monkeypatch):
+    monkeypatch.setenv("BLUEPRINT_MEDIA_ROOT", str(tmp_path / "media"))
     db_file = tmp_path / "director.sqlite3"
     application = create_app("sqlite:///" + db_file.as_posix())
     with TestClient(application) as test_client:

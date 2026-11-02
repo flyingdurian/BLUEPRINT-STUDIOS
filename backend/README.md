@@ -61,6 +61,7 @@ BS-M2 uses `backend/data/blueprint.sqlite3` by default. The directory and databa
 | PATCH | `/api/projects/{project_id}/assets/{asset_id}` | Update asset metadata / Kanban status |
 | GET | `/api/projects/{project_id}/assets/{asset_id}/versions` | Retrieve complete asset-version history |
 | POST | `/api/projects/{project_id}/assets/{asset_id}/versions` | Append next immutable asset version and increment currentVersion |
+| POST | `/api/projects/{project_id}/assets/{asset_id}/versions/upload` | Stream a media file, hash it, store it by SHA-256, and publish a new version. `201` new, `200` idempotent replay, `409` stale revision or key reuse, `413` too large, `415` unsupported type, `422` empty or invalid |
 | PUT | `/api/projects/{project_id}/shots/{shot_id}/assets/{asset_id}` | Add, pin or adopt a specific version |
 | DELETE | `/api/projects/{project_id}/shots/{shot_id}/assets/{asset_id}` | Unlink asset from shot |
 | GET | `/api/projects/{project_id}/storyboards` | List storyboard records |
@@ -74,7 +75,8 @@ API uses camelCase JSON keys matching `src/types/studio.ts`, e.g. `startFrame`, 
 ## Data integrity rules
 
 - SQLite WAL mode enabled at startup, foreign keys enabled on **every connection**, busy timeout 5 seconds.
-- All six tables created at startup for a new empty database.
+- New databases get every table at startup, including `media_blobs` and `upload_receipts`. An existing database is not rebuilt: `schema_migrations` records `m3a-media-blobs` and adds nullable `asset_versions.blob_sha256` without rewriting shots, assets, pins, or storyboards.
+- Verified uploads live under `backend/data/media/<sha256[:2]>/<sha256[2:4]>/<sha256>`. The directory is created on startup and is not served as static files. The default upload limit is 256 MiB (`BLUEPRINT_MAX_UPLOAD_BYTES`).
 - Shot IDs, asset IDs, and readable shot codes are immutable after creation. `SH_001` and similar codes remain stable across reordering.
 - A pinned `ShotAssetLink` references a real `(assetId, version)` row. Publishing an asset version **does not repin existing shots**.
 - `bootstrap` can only run once for an empty project. Imported BS-M1 asset counters become **explicit provenance-unknown placeholder version rows**, not falsified file history.

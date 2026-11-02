@@ -35,11 +35,19 @@ def build_engine(url: str | None = None) -> Engine:
 
     @event.listens_for(engine, "connect")
     def sqlite_connection_setup(connection: object, _: object) -> None:
-        # The foreign key setting is per connection; busy timeout limits transient lock failures.
+        # None lets SQLAlchemy emit BEGIN itself, so writers can take an immediate lock.
+        connection.isolation_level = None  # type: ignore[attr-defined]
         cursor = connection.cursor()  # type: ignore[attr-defined]
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.execute("PRAGMA busy_timeout=5000")
+        listed = cursor.execute("PRAGMA database_list").fetchone()
+        if listed and listed[2] not in ("", ":memory:"):
+            cursor.execute("PRAGMA journal_mode=WAL")
         cursor.close()
+
+    @event.listens_for(engine, "begin")
+    def sqlite_begin_immediate(connection: object) -> None:
+        connection.exec_driver_sql("BEGIN IMMEDIATE")  # type: ignore[attr-defined]
 
     return engine
 
@@ -57,6 +65,11 @@ def init_database(engine: Engine) -> None:
                 raise RuntimeError(f"Expected WAL journal mode, got {journal_mode!r}")
         connection.commit()
     Base.metadata.create_all(engine)
+    from .migrations import apply_migrations
+    from .services.media_store import ensure_media_root
+
+    apply_migrations(engine)
+    ensure_media_root()
 
 
 def make_session_factory(engine: Engine) -> sessionmaker[Session]:

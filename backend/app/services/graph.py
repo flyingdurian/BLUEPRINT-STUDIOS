@@ -163,11 +163,13 @@ def patch_asset(db: Session, project: m.Project, asset_id: str, changes: dict) -
 
 
 def publish_asset_version(db: Session, project: m.Project, asset_id: str, *, sha256: str | None,
-                          relative_path: str | None, description: str) -> m.AssetVersion:
+                          relative_path: str | None, description: str, source: str = "manual",
+                          blob_sha256: str | None = None) -> m.AssetVersion:
     asset = require_asset(db, project.id, asset_id)
     new_version = asset.current_version + 1
     row = m.AssetVersion(asset_id=asset_id, version=new_version, sha256=sha256,
-                         relative_path=relative_path, description=description, source="manual")
+                         relative_path=relative_path, description=description, source=source,
+                         blob_sha256=blob_sha256)
     db.add(row)
     asset.current_version = new_version
     return row

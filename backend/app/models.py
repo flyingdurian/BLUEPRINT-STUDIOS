@@ -60,6 +60,21 @@ class Asset(Base):
     )
 
 
+class MediaBlob(Base):
+    """Content-addressed file record. The digest is the identity; the path is derived from it."""
+    __tablename__ = "media_blobs"
+    sha256: Mapped[str] = mapped_column(String(64), primary_key=True)
+    byte_size: Mapped[int] = mapped_column(Integer, nullable=False)
+    media_type: Mapped[str] = mapped_column(String(127), nullable=False)
+    relative_path: Mapped[str] = mapped_column(String(80), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.current_timestamp())
+    __table_args__ = (
+        CheckConstraint("length(sha256) = 64"),
+        CheckConstraint("byte_size > 0"),
+        UniqueConstraint("relative_path", name="uq_media_blob_path"),
+    )
+
+
 class AssetVersion(Base):
     __tablename__ = "asset_versions"
     asset_id: Mapped[str] = mapped_column(ForeignKey("assets.id", ondelete="CASCADE"), primary_key=True)
@@ -69,7 +84,12 @@ class AssetVersion(Base):
     description: Mapped[str] = mapped_column(Text, nullable=False, default="")
     source: Mapped[str] = mapped_column(String(32), nullable=False, default="manual")
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.current_timestamp())
-    __table_args__ = (CheckConstraint("version >= 1"),)
+    # Null for versions created before a verified file existed, including BS-M1 import markers.
+    blob_sha256: Mapped[str | None] = mapped_column(ForeignKey("media_blobs.sha256"), nullable=True)
+    __table_args__ = (
+        CheckConstraint("version >= 1"),
+        Index("ix_asset_versions_blob", "blob_sha256"),
+    )
 
 
 class ShotAssetLink(Base):
@@ -102,3 +122,16 @@ class Storyboard(Base):
         CheckConstraint("(asset_id IS NULL AND asset_version IS NULL) OR (asset_id IS NOT NULL AND asset_version IS NOT NULL)"),
         Index("ix_storyboards_shot", "shot_id", "sort_index"),
     )
+
+
+class UploadReceipt(Base):
+    """Idempotency record for a finished upload. The key cannot be reused for different bytes."""
+    __tablename__ = "upload_receipts"
+    project_id: Mapped[str] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), primary_key=True)
+    idempotency_key: Mapped[str] = mapped_column(String(80), primary_key=True)
+    asset_id: Mapped[str] = mapped_column(ForeignKey("assets.id", ondelete="CASCADE"), nullable=False)
+    sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    byte_size: Mapped[int] = mapped_column(Integer, nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.current_timestamp())
+    __table_args__ = (CheckConstraint("byte_size > 0"), CheckConstraint("version >= 1"))

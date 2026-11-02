@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .api import projects, shots, assets, storyboards, sync
+from .api import projects, shots, assets, storyboards, sync, uploads
 from .db import build_engine, init_database, make_session_factory
 
 
@@ -29,12 +29,13 @@ def create_app(database_url: str | None = None) -> FastAPI:
     app.state.session_factory = make_session_factory(engine)
     app.add_middleware(CORSMiddleware, allow_origins=ALLOWED_LOCAL_ORIGINS,
                        allow_credentials=False, allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-                       allow_headers=["Content-Type"])
+                       allow_headers=["Content-Type", "Idempotency-Key"])
     app.include_router(projects.router)
     app.include_router(shots.router)
     app.include_router(assets.router)
     app.include_router(storyboards.router)
     app.include_router(sync.router)
+    app.include_router(uploads.router)
 
     @app.get("/api/health", tags=["system"])
     def health() -> dict[str, str]:
