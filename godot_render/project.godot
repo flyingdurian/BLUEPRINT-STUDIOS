@@ -1,0 +1,17 @@
+; Blueprint Studios M4-B: isolated five-second render proof.
+; This is not the final 14-shot production project.
+config_version=5
+
+[application]
+config/name="BLUEPRINT STUDIOS | M4-B Proof"
+run/main_scene="res://scenes/DirectorProof.tscn"
+
+[display]
+window/size/viewport_width=540
+window/size/viewport_height=960
+window/stretch/mode="canvas_items"
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "bs-m4b-smoke-v1",
+  "projectId": "blueprint-pilot-01",
+  "shotId": "shot-003",
+  "fps": 30,
+  "durationFrames": 150,
+  "asset": {
+    "assetId": "proof-phone",
+    "pinnedVersion": 1,
+    "sha256": "7d0dafde014627adfb2f35ab9cc434a67ec1fa8918a3c16b29a0db023c327491",
+    "path": "res://proof/pinned_phone.png",
+    "mediaType": "image/png"
+  },
+  "note": "This is an ORIGINAL hash-verified test fixture. It is NOT an M3-published ast-phone v2 asset."
+}
