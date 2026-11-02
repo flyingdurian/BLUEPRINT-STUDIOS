@@ -30,7 +30,6 @@ export function AssetMatrix() {
   const assets=useStudioStore(s=>s.assets)
   const selectShot=useStudioStore(s=>s.selectShot)
   const selected=useStudioStore(s=>s.selectedShotId)
-  const links=useStudioStore(s=>s.links)
   const setStatus=useStudioStore(s=>s.setAssetStatus)
   const [dragTarget,setDragTarget]=useState<AssetStatus | null>(null)
   const arr=Object.values(assets)

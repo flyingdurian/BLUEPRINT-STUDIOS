@@ -11,7 +11,7 @@ const defaultUI = {
 
 export const useStudioStore = create<StudioState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       ...createPilot(), ...defaultUI,
       selectShot: id => set(state => state.shots[id] ? { selectedShotId:id, playheadFrame:state.shots[id].startFrame, selectedAssetId:null } : {}),
       selectAsset: id => set(state => !id || state.assets[id] ? { selectedAssetId:id, stageTab:'assets' } : {}),
