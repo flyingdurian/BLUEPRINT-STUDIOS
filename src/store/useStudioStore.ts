@@ -1,18 +1,19 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { createPilot } from '../data/pilot'
-import type { StudioState, AssetStatus, CropMode, StageTab, WorkspaceView, Shot } from '../types/studio'
+import type { StudioState, AssetStatus, CropMode, StageTab, WorkspaceView, Shot, SyncStatus } from '../types/studio'
 
 const defaultUI = {
   selectedShotId: 'shot-001', selectedAssetId: null, stageTab:'storyboard' as StageTab,
   cropMode:'both' as CropMode, workspaceView:'director' as WorkspaceView,
-  playheadFrame:0, zoom:1,
+  playheadFrame:0, zoom:1, syncStatus:'local' as SyncStatus, syncMessage:'Browser state available',
 }
 
 export const useStudioStore = create<StudioState>()(
   persist(
     (set) => ({
       ...createPilot(), ...defaultUI,
+      setSyncStatus: (status, message) => set({ syncStatus:status, syncMessage:message }),
       selectShot: id => set(state => state.shots[id] ? { selectedShotId:id, playheadFrame:state.shots[id].startFrame, selectedAssetId:null } : {}),
       selectAsset: id => set(state => !id || state.assets[id] ? { selectedAssetId:id, stageTab:'assets' } : {}),
       setStageTab: tab => set({stageTab:tab}),
