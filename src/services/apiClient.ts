@@ -1,4 +1,7 @@
-import type { Asset, AssetLink, ProductionData, Shot } from '../types/studio'
+import type { GraphMutation } from '../sync/mutations'
+import type { Asset, AssetLink, ProductionData, Shot, StoryboardDraft, StoryboardRecord } from '../types/studio'
+
+export type { StoryboardDraft, StoryboardRecord }
 
 // The existing BS-M2 routes use camelCase JSON, matching BS-M1's store.
 export interface ProjectRecord {
@@ -20,26 +23,9 @@ export interface AssetVersion {
   description: string
   source: string
 }
-export interface StoryboardRecord {
-  id: string
-  projectId: string
-  shotId: string
-  cropMode: '9:16' | '16:9' | 'both'
-  mediaPath: string | null
-  assetId: string | null
-  assetVersion: number | null
-  sortIndex: number
-  notes: string
-}
-export interface StoryboardDraft {
-  id?: string
-  shotId: string
-  cropMode?: '9:16' | '16:9' | 'both'
-  mediaPath?: string | null
-  assetId?: string | null
-  assetVersion?: number | null
-  sortIndex?: number
-  notes?: string
+export interface SyncBatchResult {
+  snapshot: ProjectSnapshot
+  storyboards: StoryboardRecord[]
 }
 
 export class ApiError extends Error {
@@ -123,23 +109,78 @@ export class ApiClient {
   listStoryboards(id = PROJECT_ID): Promise<StoryboardRecord[]> {
     return this.request(`${this.projectPath(id)}/storyboards`)
   }
-  /** BS-M2 only has GET/POST storyboards, so this is add-only (no patch/delete).
-   *  Existing storyboard IDs are preserved; changed records require a future backend route.
-   */
-  async syncStoryboards(drafts: StoryboardDraft[], id = PROJECT_ID): Promise<StoryboardRecord[]> {
-    const existing = await this.listStoryboards(id)
-    const known = new Set(existing.map(board => board.id))
-    const result = [...existing]
-    for (const board of drafts) {
-      if (board.id && known.has(board.id)) continue
-      const created = await this.createStoryboard(board, id)
-      known.add(created.id)
-      result.push(created)
-    }
-    return result
-  }
   createStoryboard(data: StoryboardDraft, id = PROJECT_ID): Promise<StoryboardRecord> {
     return this.request(`${this.projectPath(id)}/storyboards`, { method: 'POST', body: JSON.stringify(data) })
   }
+  updateStoryboard(storyboardId: string, data: StoryboardDraft, revision?: number, id = PROJECT_ID): Promise<StoryboardRecord> {
+    return this.request(`${this.projectPath(id)}/storyboards/${encodeURIComponent(storyboardId)}`, {
+      method: 'PUT', body: JSON.stringify({ ...storyboardWrite(data), ...(revision === undefined ? {} : { expectedRevision: revision }) }),
+    })
+  }
+  deleteStoryboard(storyboardId: string, revision?: number, id = PROJECT_ID): Promise<void> {
+    const query = revision === undefined ? '' : `?expectedRevision=${encodeURIComponent(String(revision))}`
+    return this.request(`${this.projectPath(id)}/storyboards/${encodeURIComponent(storyboardId)}${query}`, { method: 'DELETE' })
+  }
+  syncBatch(mutations: GraphMutation[], revision: number, id = PROJECT_ID): Promise<SyncBatchResult> {
+    return this.request(`${this.projectPath(id)}/sync-batch`, {
+      method: 'POST', body: JSON.stringify({ expectedRevision: revision, mutations }),
+    })
+  }
+  /** Reconcile storyboard records. Unchanged ids are left in place; edits PUT and removals DELETE. */
+  async syncStoryboards(drafts: StoryboardDraft[], revision?: number, id = PROJECT_ID): Promise<StoryboardRecord[]> {
+    const existing = await this.listStoryboards(id)
+    let nextRevision = revision
+    const wanted = new Set(drafts.flatMap(board => board.id ? [board.id] : []))
+    for (const board of existing) {
+      if (wanted.has(board.id)) continue
+      await this.deleteStoryboard(board.id, nextRevision, id)
+      if (nextRevision !== undefined) nextRevision++
+    }
+    const known = new Map(existing.map(board => [board.id, board]))
+    const result: StoryboardRecord[] = []
+    for (const draft of drafts) {
+      const current = draft.id ? known.get(draft.id) : undefined
+      if (current && storyboardDraftMatches(current, draft)) result.push(current)
+      else if (current && draft.id) {
+        result.push(await this.updateStoryboard(draft.id, {
+          shotId: draft.shotId,
+          cropMode: draft.cropMode ?? current.cropMode,
+          mediaPath: draft.mediaPath !== undefined ? draft.mediaPath : current.mediaPath,
+          assetId: draft.assetId !== undefined ? draft.assetId : current.assetId,
+          assetVersion: draft.assetVersion !== undefined ? draft.assetVersion : current.assetVersion,
+          sortIndex: draft.sortIndex ?? current.sortIndex,
+          notes: draft.notes ?? current.notes,
+        }, nextRevision, id))
+        if (nextRevision !== undefined) nextRevision++
+      } else {
+        result.push(await this.createStoryboard(draft, id))
+        if (nextRevision !== undefined) nextRevision++
+      }
+    }
+    return result
+  }
+}
+
+function storyboardWrite(data: StoryboardDraft) {
+  return {
+    shotId: data.shotId,
+    cropMode: data.cropMode ?? '9:16',
+    mediaPath: data.mediaPath ?? null,
+    assetId: data.assetId ?? null,
+    assetVersion: data.assetVersion ?? null,
+    sortIndex: data.sortIndex ?? 0,
+    notes: data.notes ?? '',
+  }
+}
+
+function storyboardDraftMatches(record: StoryboardRecord, draft: StoryboardDraft): boolean {
+  if (draft.shotId !== record.shotId) return false
+  if (draft.cropMode !== undefined && draft.cropMode !== record.cropMode) return false
+  if (draft.mediaPath !== undefined && draft.mediaPath !== record.mediaPath) return false
+  if (draft.assetId !== undefined && draft.assetId !== record.assetId) return false
+  if (draft.assetVersion !== undefined && draft.assetVersion !== record.assetVersion) return false
+  if (draft.sortIndex !== undefined && draft.sortIndex !== record.sortIndex) return false
+  if (draft.notes !== undefined && draft.notes !== record.notes) return false
+  return true
 }
 export const apiClient = new ApiClient()

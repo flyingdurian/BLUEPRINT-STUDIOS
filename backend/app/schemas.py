@@ -1,7 +1,7 @@
 """API contracts: camelCase keys match BS-M1's TypeScript ProductionData."""
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Literal, Union
 from pathlib import PurePosixPath
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -185,3 +185,109 @@ class StoryboardOut(CamelModel):
     asset_version: int | None
     sort_index: int
     notes: str
+
+
+class StoryboardWrite(CamelModel):
+    shot_id: str
+    crop_mode: CropMode = "9:16"
+    media_path: str | None = None
+    asset_id: str | None = None
+    asset_version: int | None = Field(default=None, ge=1)
+    sort_index: int = Field(default=0, ge=0)
+    notes: str = ""
+
+    @field_validator("media_path")
+    @classmethod
+    def validate_media_path(cls, value: str | None) -> str | None:
+        return safe_relative_path(value)
+
+
+class StoryboardUpdate(StoryboardWrite):
+    expected_revision: int | None = Field(default=None, ge=0)
+
+
+class BatchCreateAsset(CamelModel):
+    op: Literal["create_asset"]
+    asset: AssetCreate
+
+
+class BatchUpdateAsset(CamelModel):
+    op: Literal["update_asset"]
+    asset_id: str = Field(min_length=1, max_length=100)
+    name: str | None = Field(default=None, min_length=1, max_length=200)
+    status: AssetStatus | None = None
+    color: str | None = None
+    shorthand: str | None = None
+
+
+class BatchPublishVersion(CamelModel):
+    op: Literal["publish_version"]
+    asset_id: str = Field(min_length=1, max_length=100)
+    sha256: str | None = None
+    relative_path: str | None = None
+    description: str = ""
+
+    @field_validator("sha256")
+    @classmethod
+    def validate_hash(cls, value: str | None) -> str | None:
+        if value is not None and (len(value) != 64 or any(c not in "0123456789abcdefABCDEF" for c in value)):
+            raise ValueError("sha256 must contain 64 hexadecimal digits")
+        return value.lower() if value else None
+
+    @field_validator("relative_path")
+    @classmethod
+    def validate_relative_path(cls, value: str | None) -> str | None:
+        return safe_relative_path(value)
+
+
+class BatchSyncShots(CamelModel):
+    op: Literal["sync_shots"]
+    shots: dict[str, ShotPayload]
+    shot_order: list[str]
+    next_shot_number: int = Field(ge=1)
+
+
+class BatchUpsertLink(CamelModel):
+    op: Literal["upsert_link"]
+    shot_id: str
+    asset_id: str
+    pinned_version: int | None = Field(default=None, ge=1)
+
+
+class BatchDeleteLink(CamelModel):
+    op: Literal["delete_link"]
+    shot_id: str
+    asset_id: str
+
+
+class BatchCreateStoryboard(CamelModel):
+    op: Literal["create_storyboard"]
+    storyboard: StoryboardCreate
+
+
+class BatchUpdateStoryboard(CamelModel):
+    op: Literal["update_storyboard"]
+    storyboard_id: str = Field(min_length=1, max_length=100)
+    storyboard: StoryboardWrite
+
+
+class BatchDeleteStoryboard(CamelModel):
+    op: Literal["delete_storyboard"]
+    storyboard_id: str = Field(min_length=1, max_length=100)
+
+
+BatchMutation = Annotated[Union[
+    BatchCreateAsset, BatchUpdateAsset, BatchPublishVersion, BatchSyncShots,
+    BatchUpsertLink, BatchDeleteLink, BatchCreateStoryboard, BatchUpdateStoryboard,
+    BatchDeleteStoryboard,
+], Field(discriminator="op")]
+
+
+class SyncBatch(CamelModel):
+    expected_revision: int = Field(ge=0)
+    mutations: list[BatchMutation] = Field(min_length=1)
+
+
+class SyncBatchOut(CamelModel):
+    snapshot: SnapshotOut
+    storyboards: list[StoryboardOut]

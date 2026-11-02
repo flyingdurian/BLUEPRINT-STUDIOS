@@ -157,3 +157,75 @@ def test_storyboard_path_sanitization(client, pilot):
     url = f"/api/projects/{pid}/storyboards"
     assert c.post(url, json={"shotId": "shot-001", "mediaPath": "../outside.png"}).status_code == 422
     assert c.post(url, json={"shotId": "shot-001", "mediaPath": "frames/storyboard.png"}).status_code == 201
+
+
+def test_storyboard_put_delete_and_revision(client, pilot):
+    c, _ = client
+    pid = create_project(c)
+    other = create_project(c, "Other")
+    assert c.post(f"/api/projects/{pid}/bootstrap", json=pilot).status_code == 201
+    url = f"/api/projects/{pid}/storyboards"
+    created = c.post(url, json={"id": "board-1", "shotId": "shot-001", "notes": "Opening still"})
+    assert created.status_code == 201, created.text
+    assert c.get(f"/api/projects/{pid}/snapshot").json()["revision"] == 2
+    stale = c.put(f"{url}/board-1", json={"shotId": "shot-001", "notes": "Nope", "expectedRevision": 1})
+    assert stale.status_code == 409
+    assert c.get(url).json()[0]["notes"] == "Opening still"
+    updated = c.put(f"{url}/board-1", json={
+        "shotId": "shot-002", "cropMode": "16:9", "notes": "Revised", "sortIndex": 2,
+        "mediaPath": "frames/board.png", "expectedRevision": 2,
+    })
+    assert updated.status_code == 200, updated.text
+    body = updated.json()
+    assert body["shotId"] == "shot-002"
+    assert body["notes"] == "Revised"
+    assert body["mediaPath"] == "frames/board.png"
+    assert c.put(f"/api/projects/{other}/storyboards/board-1", json={"shotId": "shot-001", "notes": "x"}).status_code == 404
+    assert c.get(f"/api/projects/{pid}/snapshot").json()["revision"] == 3
+    assert c.delete(f"{url}/board-1?expectedRevision=2").status_code == 409
+    assert c.delete(f"{url}/board-1?expectedRevision=3").status_code == 204
+    assert c.get(url).json() == []
+    assert c.delete(f"{url}/board-1").status_code == 404
+
+
+def test_sync_batch_is_atomic_and_single_revision(client, pilot):
+    c, _ = client
+    pid = create_project(c)
+    assert c.post(f"/api/projects/{pid}/bootstrap", json=pilot).status_code == 201
+    shots = {**pilot["shots"], "shot-002": {**pilot["shots"]["shot-002"], "narration": "Batch narration."}}
+    ok = c.post(f"/api/projects/{pid}/sync-batch", json={
+        "expectedRevision": 1,
+        "mutations": [
+            {"op": "update_asset", "assetId": "ast-mug", "status": "Rigging"},
+            {"op": "sync_shots", "shots": shots, "shotOrder": pilot["shotOrder"], "nextShotNumber": pilot["nextShotNumber"]},
+            {"op": "create_storyboard", "storyboard": {"id": "board-9", "shotId": "shot-001", "notes": "Batch still"}},
+        ],
+    })
+    assert ok.status_code == 200, ok.text
+    payload = ok.json()
+    assert payload["snapshot"]["revision"] == 2
+    assert payload["snapshot"]["shots"]["shot-002"]["narration"] == "Batch narration."
+    assert payload["snapshot"]["assets"]["ast-mug"]["status"] == "Rigging"
+    assert payload["storyboards"][0]["id"] == "board-9"
+    assert payload["storyboards"][0]["notes"] == "Batch still"
+    bad_shots = {**shots, "shot-001": {**shots["shot-001"], "narration": "Should roll back"}}
+    bad = c.post(f"/api/projects/{pid}/sync-batch", json={
+        "expectedRevision": 2,
+        "mutations": [
+            {"op": "sync_shots", "shots": bad_shots, "shotOrder": pilot["shotOrder"], "nextShotNumber": pilot["nextShotNumber"]},
+            {"op": "create_storyboard", "storyboard": {"shotId": "shot-001", "assetId": "ast-phone", "assetVersion": 999}},
+        ],
+    })
+    assert bad.status_code == 422, bad.text
+    snap = c.get(f"/api/projects/{pid}/snapshot").json()
+    assert snap["revision"] == 2
+    assert snap["shots"]["shot-001"]["narration"] == pilot["shots"]["shot-001"]["narration"]
+    assert snap["shots"]["shot-002"]["narration"] == "Batch narration."
+    assert c.get(f"/api/projects/{pid}/storyboards").json()[0]["notes"] == "Batch still"
+    stale = c.post(f"/api/projects/{pid}/sync-batch", json={
+        "expectedRevision": 1,
+        "mutations": [{"op": "delete_storyboard", "storyboardId": "board-9"}],
+    })
+    assert stale.status_code == 409
+    assert c.get(f"/api/projects/{pid}/storyboards").json()[0]["id"] == "board-9"
+    assert c.post(f"/api/projects/{pid}/sync-batch", json={"expectedRevision": 2, "mutations": []}).status_code == 422

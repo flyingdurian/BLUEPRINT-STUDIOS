@@ -48,11 +48,12 @@ BS-M2's CORS allowlist already permits the local Vite origins. Do not expose thi
 - After a successful sync, the client stores a last-confirmed graph and SQLite revision in the separate localStorage key `blueprint-studios-bs-m2.1-checkpoint`.
 - Offline changes after a confirmed checkpoint are compared to that baseline and replayed on reconnect **only if the server revision is unchanged**. Otherwise the UI reports a conflict, preserving the local draft.
 - A change made during an API request remains in the browser state and is scheduled for the next sync attempt. UI-only shot selection does not generate writes.
-- API operations are sequential to respect `expectedRevision`; the backend has no atomic mixed asset/shot/link endpoint yet. If connection fails midway through a multi-operation batch, the bridge preserves the local draft but can require manual reconciliation. **BS-M2.2 should add an atomic graph patch/transaction endpoint and durable mutation journal.**
+- Shot, asset, link, and storyboard edits are sent together to `POST /api/projects/{id}/sync-batch`. The server checks `expectedRevision` once and commits the whole batch, or nothing.
+- Offline edits are stored in the local mutation journal `blueprint-studios-bs-m2.2-journal` and replayed on reconnect only when the server revision still matches that queue. A newer server revision stays a conflict; the local draft is not overwritten.
 
 ## Storyboard API boundary
 
-BS-M2 only exposes GET and POST for storyboards; `apiClient.syncStoryboards` therefore supports add-only reconciliation by ID. Updates/removals and automatic storyboard state are deferred until the backend exposes corresponding CRUD and snapshot fields. No invented functionality is implied.
+Storyboard records live on the studio store and sync through create, replace, and delete. `apiClient.syncStoryboards` adds missing ids, replaces changed records, and deletes records that are no longer in the draft. The bridge sends those same changes inside the atomic batch.
 
 ## Verify
 

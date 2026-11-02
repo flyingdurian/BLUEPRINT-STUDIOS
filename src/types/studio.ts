@@ -29,6 +29,27 @@ export interface AssetLink {
   assetId: string
   pinnedVersion: number
 }
+export interface StoryboardRecord {
+  id: string
+  projectId: string
+  shotId: string
+  cropMode: CropMode
+  mediaPath: string | null
+  assetId: string | null
+  assetVersion: number | null
+  sortIndex: number
+  notes: string
+}
+export interface StoryboardDraft {
+  id?: string
+  shotId: string
+  cropMode?: CropMode
+  mediaPath?: string | null
+  assetId?: string | null
+  assetVersion?: number | null
+  sortIndex?: number
+  notes?: string
+}
 export interface ProductionData {
   shots: Record<string, Shot>
   shotOrder: string[]
@@ -63,6 +84,8 @@ export interface StudioActions {
   setAssetStatus: (id: string, status: AssetStatus) => void
   bumpAssetVersion: (id: string) => void
   adoptAssetVersion: (shotId: string, assetId: string) => void
+  upsertStoryboard: (draft: StoryboardDraft) => void
+  removeStoryboard: (id: string) => void
   resetPilot: () => void
 }
-export type StudioState = ProductionData & UIState & StudioActions
+export type StudioState = ProductionData & UIState & StudioActions & { storyboards: StoryboardRecord[] }

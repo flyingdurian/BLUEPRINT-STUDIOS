@@ -1,10 +1,12 @@
-import type { ProductionData } from '../types/studio'
+import type { ProductionData, StoryboardRecord } from '../types/studio'
 import { createPilot } from '../data/pilot'
 import { useStudioStore } from '../store/useStudioStore'
 import { apiClient, ApiClient, ApiError, isOfflineError, PROJECT_ID, type ProjectSnapshot } from '../services/apiClient'
-import { assetMetadataChanged, fingerprint, productionGraph, shotsChanged } from './graph'
+import { fingerprint, productionGraph } from './graph'
+import { MutationJournal, createJournalId, type QueuedBatch } from './journal'
+import { buildMutations, storyboardFingerprint } from './mutations'
 
-interface Checkpoint { revision: number; graph: ProductionData }
+interface Checkpoint { revision: number; graph: ProductionData; storyboards: StoryboardRecord[] }
 const CHECKPOINT_KEY = 'blueprint-studios-bs-m2.1-checkpoint'
 const DEBOUNCE_MS = 650
 const RETRY_MS = 15000
@@ -13,21 +15,27 @@ function readCheckpoint(): Checkpoint | null {
   try {
     const raw = localStorage.getItem(CHECKPOINT_KEY)
     if (!raw) return null
-    const checkpoint = JSON.parse(raw) as Checkpoint
-    return Number.isInteger(checkpoint.revision) && checkpoint.graph?.shotOrder ? checkpoint : null
+    const checkpoint = JSON.parse(raw) as Partial<Checkpoint>
+    if (!Number.isInteger(checkpoint.revision) || !checkpoint.graph?.shotOrder) return null
+    return { revision: checkpoint.revision as number, graph: checkpoint.graph, storyboards: checkpoint.storyboards ?? [] }
   } catch { return null }
 }
 function writeCheckpoint(data: Checkpoint): void {
   localStorage.setItem(CHECKPOINT_KEY, JSON.stringify(data))
 }
 function localGraph(): ProductionData { return productionGraph(useStudioStore.getState()) }
+function localBoards(): StoryboardRecord[] { return useStudioStore.getState().storyboards.map(board => ({ ...board })) }
 function storeStatus(status: 'connecting' | 'synced' | 'offline' | 'pending' | 'conflict', message: string): void {
   useStudioStore.getState().setSyncStatus(status, message)
 }
+function sameWorkspace(graph: ProductionData, boards: StoryboardRecord[], otherGraph: ProductionData, otherBoards: StoryboardRecord[]): boolean {
+  return fingerprint(graph) === fingerprint(otherGraph) && storyboardFingerprint(boards) === storyboardFingerprint(otherBoards)
+}
 
 /**
- * Serializes local graph updates to existing BS-M2 endpoints. UI-only selection
- * does not trigger a write. No destructive remote overwrite on revision conflict.
+ * Serializes local graph updates through one atomic batch. Offline edits are
+ * queued in the mutation journal and replayed only when the server revision
+ * still matches that queue. UI-only selection does not trigger a write.
  */
 export class PersistenceBridge {
   private checkpoint: Checkpoint | null = null
@@ -37,8 +45,11 @@ export class PersistenceBridge {
   private stopped = false
   private unsubscribe: (() => void) | null = null
   private suppress = false
+  private readonly journal: MutationJournal
 
-  constructor(private readonly client: ApiClient = apiClient) {}
+  constructor(private readonly client: ApiClient = apiClient, journal?: MutationJournal) {
+    this.journal = journal ?? new MutationJournal()
+  }
 
   start(): () => void {
     this.stopped = false
@@ -47,8 +58,9 @@ export class PersistenceBridge {
       if (this.suppress) return
       if (state.shots !== before.shots || state.shotOrder !== before.shotOrder
           || state.assets !== before.assets || state.links !== before.links
-          || state.nextShotNumber !== before.nextShotNumber) {
+          || state.nextShotNumber !== before.nextShotNumber || state.storyboards !== before.storyboards) {
         storeStatus('pending', 'Local changes saved; waiting to sync')
+        this.persistJournal()
         this.schedule()
       }
     })
@@ -81,28 +93,50 @@ export class PersistenceBridge {
     this.active = this.reconcile().finally(() => {
       this.active = null
       // Edits made during the request must still be sent, not erased.
-      if (!this.stopped && this.checkpoint && fingerprint(localGraph()) !== fingerprint(this.checkpoint.graph)
-          && useStudioStore.getState().syncStatus !== 'offline'
-          && useStudioStore.getState().syncStatus !== 'conflict') this.schedule()
+      const status = useStudioStore.getState().syncStatus
+      if (!this.stopped && this.checkpoint && !this.matchesCheckpoint() && status !== 'offline' && status !== 'conflict') this.schedule()
     })
     return this.active
   }
 
-  private applyRemote(snapshot: ProjectSnapshot) {
+  private matchesCheckpoint(): boolean {
+    return !!this.checkpoint && sameWorkspace(localGraph(), localBoards(), this.checkpoint.graph, this.checkpoint.storyboards)
+  }
+
+  private applyRemote(snapshot: ProjectSnapshot, storyboards: StoryboardRecord[]) {
     const current = useStudioStore.getState()
     const selectedShotId = snapshot.shots[current.selectedShotId] ? current.selectedShotId : snapshot.shotOrder[0]
     this.suppress = true
     useStudioStore.setState({
-      ...productionGraph(snapshot), selectedShotId,
+      ...productionGraph(snapshot), storyboards: storyboards.map(board => ({ ...board })), selectedShotId,
       selectedAssetId: current.selectedAssetId && snapshot.assets[current.selectedAssetId] ? current.selectedAssetId : null,
       playheadFrame: snapshot.shots[selectedShotId]?.startFrame ?? 0,
     })
     this.suppress = false
   }
 
-  private saveBaseline(snapshot: ProjectSnapshot): void {
-    this.checkpoint = { revision: snapshot.revision, graph: productionGraph(snapshot) }
+  private saveBaseline(snapshot: ProjectSnapshot, storyboards: StoryboardRecord[]): void {
+    this.checkpoint = { revision: snapshot.revision, graph: productionGraph(snapshot), storyboards: storyboards.map(board => ({ ...board })) }
     writeCheckpoint(this.checkpoint)
+  }
+
+  /** Record the diff from the confirmed baseline. A failed network call leaves this queue intact. */
+  private persistJournal(): void {
+    try {
+      const base = this.checkpoint
+      if (!base) return
+      const pending = this.journal.read()
+      if (pending && pending.baseRevision !== base.revision) return
+      const mutations = buildMutations(base.graph, localGraph(), base.storyboards, localBoards())
+      if (mutations.length === 0) {
+        this.journal.clear()
+        return
+      }
+      const batch: QueuedBatch = {
+        id: pending?.id ?? createJournalId(), baseRevision: base.revision, mutations, recordedAt: new Date().toISOString(),
+      }
+      this.journal.enqueue(batch)
+    } catch { /* The studio store still holds the editable draft. */ }
   }
 
   private async reconcile(): Promise<void> {
@@ -131,32 +165,34 @@ export class PersistenceBridge {
           remote = await this.client.getProjectSnapshot(PROJECT_ID)
         }
       }
+      const remoteBoards = await this.client.listStoryboards(PROJECT_ID)
       const now = localGraph()
-      const localHash = fingerprint(now)
-      const remoteHash = fingerprint(remote)
+      const boards = localBoards()
       const base = this.checkpoint
-      if (localHash === remoteHash) {
-        this.saveBaseline(remote)
+      if (sameWorkspace(now, boards, remote, remoteBoards)) {
+        this.journal.clear()
+        this.saveBaseline(remote, remoteBoards)
         storeStatus('synced', 'Saved in SQLite')
         return
       }
       if (base) {
-        const baseHash = fingerprint(base.graph)
-        if (localHash === baseHash) {
-          this.applyRemote(remote)
-          this.saveBaseline(remote)
+        if (sameWorkspace(now, boards, base.graph, base.storyboards)) {
+          this.journal.clear()
+          this.applyRemote(remote, remoteBoards)
+          this.saveBaseline(remote, remoteBoards)
           storeStatus('synced', 'Loaded latest SQLite snapshot')
           return
         }
-        if (base.revision !== remote.revision || baseHash !== remoteHash) {
+        if (base.revision !== remote.revision || !sameWorkspace(base.graph, base.storyboards, remote, remoteBoards)) {
           storeStatus('conflict', 'Local changes differ from a newer SQLite revision; choose which copy to keep')
           return
         }
-        await this.pushChanges(base.graph, now, remote.revision)
-      } else if (localHash === fingerprint(createPilot())) {
+        await this.pushWorkspace(remote.revision)
+      } else if (fingerprint(now) === fingerprint(createPilot()) && boards.length === 0) {
         // No pre-existing edits: prefer SQLite, never the default pilot seed.
-        this.applyRemote(remote)
-        this.saveBaseline(remote)
+        this.journal.clear()
+        this.applyRemote(remote, remoteBoards)
+        this.saveBaseline(remote, remoteBoards)
         storeStatus('synced', 'Loaded SQLite project')
         return
       } else {
@@ -164,69 +200,39 @@ export class PersistenceBridge {
         storeStatus('conflict', 'Existing local browser edits differ from SQLite; review before replacing either copy')
         return
       }
-      const updated = await this.client.getProjectSnapshot(PROJECT_ID)
-      this.saveBaseline(updated)
-      if (fingerprint(localGraph()) === fingerprint(updated)) storeStatus('synced', 'Saved in SQLite')
+      if (this.stopped || useStudioStore.getState().syncStatus === 'conflict') return
+      if (this.matchesCheckpoint()) storeStatus('synced', 'Saved in SQLite')
       else storeStatus('pending', 'Newer local edits waiting to sync')
     } catch (err) {
       if (this.stopped) return
-      if (isOfflineError(err)) storeStatus('offline', 'FastAPI unavailable; changes stay saved locally')
-      else if (err instanceof ApiError && err.status === 409) storeStatus('conflict', 'SQLite revision conflict; local edits preserved')
+      if (isOfflineError(err)) {
+        this.persistJournal()
+        storeStatus('offline', 'FastAPI unavailable; changes stay saved locally')
+      } else if (err instanceof ApiError && err.status === 409) storeStatus('conflict', 'SQLite revision conflict; local edits preserved')
       else storeStatus('conflict', `Sync paused: ${err instanceof Error ? err.message : String(err)}`)
     }
   }
 
-  private async pushChanges(before: ProductionData, desired: ProductionData, revision: number): Promise<void> {
-    // Writes are serialized. Each response increments project.revision by one.
-    // Asset creation and version publication are separate BS-M2 endpoints.
-    for (const [assetId, asset] of Object.entries(desired.assets)) {
-      const original = before.assets[assetId]
-      if (!original) {
-        await this.client.createAsset(asset)
-        revision++
-      } else if (assetMetadataChanged(original, asset)) {
-        await this.client.updateAsset(assetId, {
-          name: asset.name, status: asset.status, color: asset.color, shorthand: asset.shorthand,
-        }, revision)
-        revision++
-      }
+  private async pushWorkspace(revision: number): Promise<void> {
+    this.persistJournal()
+    const pending = this.journal.read()
+    if (!pending || pending.mutations.length === 0) return
+    if (pending.baseRevision !== revision) {
+      storeStatus('conflict', 'Queued edits belong to an older SQLite revision')
+      return
     }
-    for (const [assetId, asset] of Object.entries(desired.assets)) {
-      const original = before.assets[assetId]
-      const oldVersion = original?.currentVersion ?? 1
-      if (asset.currentVersion < oldVersion) throw new Error(`Cannot decrement asset version: ${assetId}`)
-      for (let v = oldVersion; v < asset.currentVersion; v++) {
-        await this.client.publishAssetVersion(assetId, revision)
-        revision++
-      }
-    }
-    if (shotsChanged(before, desired)) {
-      const result = await this.client.syncShots({
-        shots: desired.shots, shotOrder: desired.shotOrder, nextShotNumber: desired.nextShotNumber,
-      }, revision)
-      revision = result.revision
-    }
-    const originalLinks = new Map(before.links.map(l => [`${l.shotId}\u0000${l.assetId}`, l]))
-    const desiredLinks = new Map(desired.links.map(l => [`${l.shotId}\u0000${l.assetId}`, l]))
-    for (const [key, link] of originalLinks) {
-      if (!desiredLinks.has(key)) {
-        await this.client.unlinkAsset(link.shotId, link.assetId)
-        revision++
-      }
-    }
-    for (const [key, link] of desiredLinks) {
-      if (originalLinks.get(key)?.pinnedVersion !== link.pinnedVersion) {
-        await this.client.linkAsset(link.shotId, link.assetId, link.pinnedVersion, revision)
-        revision++
-      }
-    }
+    const result = await this.client.syncBatch(this.journal.replay(), pending.baseRevision)
+    this.journal.clear()
+    this.saveBaseline(result.snapshot, result.storyboards)
   }
 
   /** Explicitly discards the browser copy after remote/local conflict. */
   async useServerCopy(): Promise<void> {
     const snapshot = await this.client.getProjectSnapshot(PROJECT_ID)
-    this.applyRemote(snapshot)
-    this.saveBaseline(snapshot)
+    const storyboards = await this.client.listStoryboards(PROJECT_ID)
+    this.applyRemote(snapshot, storyboards)
+    this.saveBaseline(snapshot, storyboards)
+    this.journal.clear()
     storeStatus('synced', 'Using SQLite project')
   }
 }

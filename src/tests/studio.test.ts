@@ -65,6 +65,15 @@ describe('Tri-Link Zustand actions', () => {
     expect(store.getState().shots['shot-005'].narration).toBe('A revised test line')
     expect(store.getState().links.filter(l=>l.shotId==='shot-005')).toEqual(oldLinks)
   })
+  it('upserts one storyboard record and can remove it', () => {
+    store.getState().upsertStoryboard({ id: 'board-1', shotId: 'shot-001', notes: 'First' })
+    store.getState().upsertStoryboard({ id: 'board-1', shotId: 'shot-001', notes: 'Second' })
+    expect(store.getState().storyboards).toHaveLength(1)
+    expect(store.getState().storyboards[0].notes).toBe('Second')
+    expect(store.getState().storyboards[0].shotId).toBe('shot-001')
+    store.getState().removeStoryboard('board-1')
+    expect(store.getState().storyboards).toEqual([])
+  })
   it('adding a shot does not change existing permanent IDs', () => {
     const before=[...store.getState().shotOrder]
     store.getState().addShot()

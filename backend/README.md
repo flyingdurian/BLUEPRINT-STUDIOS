@@ -65,6 +65,9 @@ BS-M2 uses `backend/data/blueprint.sqlite3` by default. The directory and databa
 | DELETE | `/api/projects/{project_id}/shots/{shot_id}/assets/{asset_id}` | Unlink asset from shot |
 | GET | `/api/projects/{project_id}/storyboards` | List storyboard records |
 | POST | `/api/projects/{project_id}/storyboards` | Create storyboard record linked to a shot (optional asset version) |
+| PUT | `/api/projects/{project_id}/storyboards/{storyboard_id}` | Replace a storyboard record. Optional `expectedRevision` returns 409 when stale |
+| DELETE | `/api/projects/{project_id}/storyboards/{storyboard_id}` | Remove a storyboard record. Optional `expectedRevision` query returns 409 when stale |
+| POST | `/api/projects/{project_id}/sync-batch` | Apply an ordered list of shot, asset, link, and storyboard mutations in one transaction. `expectedRevision` is checked once; revision increments once |
 
 API uses camelCase JSON keys matching `src/types/studio.ts`, e.g. `startFrame`, `durationFrames`, `artKey`, `currentVersion`, `pinnedVersion`. Database columns use conventional snake_case. `shots` and `assets` are dictionaries keyed by the immutable BS-M1 IDs; `shotOrder` is an ordered list of those IDs. All timing is integer frames, **not floating-point seconds**.
 

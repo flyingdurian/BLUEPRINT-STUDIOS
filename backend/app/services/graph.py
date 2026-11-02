@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+from uuid import uuid4
 
 from fastapi import HTTPException
 from sqlalchemy import select
@@ -104,17 +105,17 @@ def snapshot(db: Session, project: m.Project) -> s.SnapshotOut:
     )
 
 
-def apply_shot_sync(db: Session, project: m.Project, payload: s.ShotSync) -> None:
-    check_revision(project, payload.expected_revision)
-    assert_shot_graph(payload.shots, payload.shot_order)
-    validate_next_shot_number(payload.shots, payload.next_shot_number)
+def write_shot_graph(db: Session, project: m.Project, shots: dict[str, s.ShotPayload],
+                     order: list[str], next_shot_number: int) -> None:
+    assert_shot_graph(shots, order)
+    validate_next_shot_number(shots, next_shot_number)
     existing = {row.id: row for row in db.scalars(select(m.Shot).where(m.Shot.project_id == project.id)).all()}
-    wanted = set(payload.shots)
+    wanted = set(shots)
     for id_, old in existing.items():
         if id_ not in wanted:
             db.delete(old)  # Existing dependent links/storyboards cascade in SQLite.
-    for index, id_ in enumerate(payload.shot_order):
-        input_row = payload.shots[id_]
+    for index, id_ in enumerate(order):
+        input_row = shots[id_]
         current = existing.get(id_)
         if current is None:
             current = m.Shot(id=id_, project_id=project.id)
@@ -130,9 +131,163 @@ def apply_shot_sync(db: Session, project: m.Project, payload: s.ShotSync) -> Non
         current.notes = input_row.notes
         current.art_key = input_row.art_key
         current.mood = input_row.mood
-    if payload.next_shot_number < project.next_shot_number:
+    if next_shot_number < project.next_shot_number:
         raise HTTPException(409, "nextShotNumber cannot move backwards")
-    project.next_shot_number = payload.next_shot_number
+    project.next_shot_number = next_shot_number
+
+
+def apply_shot_sync(db: Session, project: m.Project, payload: s.ShotSync) -> None:
+    check_revision(project, payload.expected_revision)
+    write_shot_graph(db, project, payload.shots, payload.shot_order, payload.next_shot_number)
+    touch(project)
+
+
+def insert_asset(db: Session, project: m.Project, payload: s.AssetCreate) -> m.Asset:
+    asset_id = payload.id or str(uuid4())
+    if db.get(m.Asset, asset_id):
+        raise HTTPException(409, "Asset ID already exists")
+    asset = m.Asset(id=asset_id, project_id=project.id, name=payload.name, category=payload.category,
+                    status=payload.status, current_version=1, color=payload.color, shorthand=payload.shorthand)
+    db.add(asset)
+    db.flush()
+    db.add(m.AssetVersion(asset_id=asset_id, version=1, source="created", description="Initial asset version"))
+    return asset
+
+
+def patch_asset(db: Session, project: m.Project, asset_id: str, changes: dict) -> m.Asset:
+    asset = require_asset(db, project.id, asset_id)
+    for name, value in changes.items():
+        if value is not None:
+            setattr(asset, name, value)
+    return asset
+
+
+def publish_asset_version(db: Session, project: m.Project, asset_id: str, *, sha256: str | None,
+                          relative_path: str | None, description: str) -> m.AssetVersion:
+    asset = require_asset(db, project.id, asset_id)
+    new_version = asset.current_version + 1
+    row = m.AssetVersion(asset_id=asset_id, version=new_version, sha256=sha256,
+                         relative_path=relative_path, description=description, source="manual")
+    db.add(row)
+    asset.current_version = new_version
+    return row
+
+
+def upsert_link(db: Session, project: m.Project, shot_id: str, asset_id: str,
+                pinned_version: int | None) -> s.AssetLinkPayload:
+    require_shot(db, project.id, shot_id)
+    asset = require_asset(db, project.id, asset_id)
+    version = asset.current_version if pinned_version is None else pinned_version
+    if db.get(m.AssetVersion, (asset_id, version)) is None:
+        raise HTTPException(422, "Pinned asset version does not exist")
+    link = db.get(m.ShotAssetLink, (shot_id, asset_id))
+    if link is None:
+        link = m.ShotAssetLink(shot_id=shot_id, asset_id=asset_id, pinned_version=version)
+        db.add(link)
+    else:
+        link.pinned_version = version
+    return s.AssetLinkPayload(shot_id=shot_id, asset_id=asset_id, pinned_version=version)
+
+
+def remove_link(db: Session, project: m.Project, shot_id: str, asset_id: str) -> None:
+    require_shot(db, project.id, shot_id)
+    require_asset(db, project.id, asset_id)
+    link = db.get(m.ShotAssetLink, (shot_id, asset_id))
+    if link is None:
+        raise HTTPException(404, "Shot-asset link not found")
+    db.delete(link)
+
+
+def require_storyboard(db: Session, project_id: str, storyboard_id: str) -> m.Storyboard:
+    row = db.get(m.Storyboard, storyboard_id)
+    if row is None or row.project_id != project_id:
+        raise HTTPException(404, "Storyboard not found in project")
+    return row
+
+
+def storyboard_payload(row: m.Storyboard) -> s.StoryboardOut:
+    return s.StoryboardOut(id=row.id, project_id=row.project_id, shot_id=row.shot_id,
+                           crop_mode=row.crop_mode, media_path=row.media_path,
+                           asset_id=row.asset_id, asset_version=row.asset_version,
+                           sort_index=row.sort_index, notes=row.notes)
+
+
+def storyboard_rows(db: Session, project_id: str) -> list[m.Storyboard]:
+    return list(db.scalars(select(m.Storyboard).where(m.Storyboard.project_id == project_id)
+                           .order_by(m.Storyboard.sort_index, m.Storyboard.id)).all())
+
+
+def _validate_storyboard_asset(db: Session, project_id: str, asset_id: str | None, asset_version: int | None) -> None:
+    if (asset_id is None) != (asset_version is None):
+        raise HTTPException(422, "assetId and assetVersion must both be specified or both omitted")
+    if asset_id is not None:
+        require_asset(db, project_id, asset_id)
+        if db.get(m.AssetVersion, (asset_id, asset_version)) is None:
+            raise HTTPException(422, "Storyboard asset version does not exist")
+
+
+def create_storyboard(db: Session, project: m.Project, payload: s.StoryboardCreate) -> m.Storyboard:
+    require_shot(db, project.id, payload.shot_id)
+    _validate_storyboard_asset(db, project.id, payload.asset_id, payload.asset_version)
+    storyboard_id = payload.id or str(uuid4())
+    if db.get(m.Storyboard, storyboard_id):
+        raise HTTPException(409, "Storyboard ID exists")
+    row = m.Storyboard(id=storyboard_id, project_id=project.id, shot_id=payload.shot_id,
+                       crop_mode=payload.crop_mode, media_path=payload.media_path,
+                       asset_id=payload.asset_id, asset_version=payload.asset_version,
+                       sort_index=payload.sort_index, notes=payload.notes)
+    db.add(row)
+    return row
+
+
+def replace_storyboard(db: Session, project: m.Project, storyboard_id: str, payload: s.StoryboardWrite) -> m.Storyboard:
+    row = require_storyboard(db, project.id, storyboard_id)
+    require_shot(db, project.id, payload.shot_id)
+    _validate_storyboard_asset(db, project.id, payload.asset_id, payload.asset_version)
+    row.shot_id = payload.shot_id
+    row.crop_mode = payload.crop_mode
+    row.media_path = payload.media_path
+    row.asset_id = payload.asset_id
+    row.asset_version = payload.asset_version
+    row.sort_index = payload.sort_index
+    row.notes = payload.notes
+    return row
+
+
+def remove_storyboard(db: Session, project: m.Project, storyboard_id: str) -> None:
+    db.delete(require_storyboard(db, project.id, storyboard_id))
+
+
+def apply_mutation(db: Session, project: m.Project, mutation: s.BatchMutation) -> None:
+    if isinstance(mutation, s.BatchSyncShots):
+        write_shot_graph(db, project, mutation.shots, mutation.shot_order, mutation.next_shot_number)
+    elif isinstance(mutation, s.BatchCreateAsset):
+        insert_asset(db, project, mutation.asset)
+    elif isinstance(mutation, s.BatchUpdateAsset):
+        patch_asset(db, project, mutation.asset_id, mutation.model_dump(exclude={"op", "asset_id"}, exclude_unset=True))
+    elif isinstance(mutation, s.BatchPublishVersion):
+        publish_asset_version(db, project, mutation.asset_id, sha256=mutation.sha256,
+                              relative_path=mutation.relative_path, description=mutation.description)
+    elif isinstance(mutation, s.BatchUpsertLink):
+        upsert_link(db, project, mutation.shot_id, mutation.asset_id, mutation.pinned_version)
+    elif isinstance(mutation, s.BatchDeleteLink):
+        remove_link(db, project, mutation.shot_id, mutation.asset_id)
+    elif isinstance(mutation, s.BatchCreateStoryboard):
+        create_storyboard(db, project, mutation.storyboard)
+    elif isinstance(mutation, s.BatchUpdateStoryboard):
+        replace_storyboard(db, project, mutation.storyboard_id, mutation.storyboard)
+    elif isinstance(mutation, s.BatchDeleteStoryboard):
+        remove_storyboard(db, project, mutation.storyboard_id)
+    else:
+        raise HTTPException(422, "Unsupported graph mutation")
+
+
+def apply_batch(db: Session, project: m.Project, payload: s.SyncBatch) -> None:
+    """Apply every mutation, then advance revision once. The caller commits."""
+    check_revision(project, payload.expected_revision)
+    for mutation in payload.mutations:
+        apply_mutation(db, project, mutation)
+        db.flush()
     touch(project)
 
 
