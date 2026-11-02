@@ -5,3 +5,5 @@ dist
 *.log
 .env.local
 coverage
+/data/renders/
+godot_render/.godot/
