@@ -50,6 +50,30 @@ export interface StoryboardDraft {
   sortIndex?: number
   notes?: string
 }
+export interface AssetVersionRecord {
+  version: number
+  sha256: string | null
+  relativePath: string | null
+  description: string
+  source: string
+  byteSize?: number
+  mediaType?: string
+}
+export interface AssetUploadState {
+  fileName: string
+  loaded: number
+  total: number
+  status: 'uploading' | 'error' | 'done'
+  message?: string
+  sha256?: string
+  version?: number
+}
+export interface VersionReviewNotice {
+  assetId: string
+  assetName: string
+  version: number
+  shotIds: string[]
+}
 export interface ProductionData {
   shots: Record<string, Shot>
   shotOrder: string[]
@@ -86,6 +110,18 @@ export interface StudioActions {
   adoptAssetVersion: (shotId: string, assetId: string) => void
   upsertStoryboard: (draft: StoryboardDraft) => void
   removeStoryboard: (id: string) => void
+  beginUpload: (assetId: string, fileName: string, total: number) => void
+  setUploadProgress: (assetId: string, loaded: number, total: number) => void
+  failUpload: (assetId: string, message: string) => void
+  clearUpload: (assetId: string) => void
+  replaceAssetVersions: (assetId: string, versions: AssetVersionRecord[]) => void
+  recordVerifiedUpload: (assetId: string, version: AssetVersionRecord) => void
+  dismissVersionReview: () => void
   resetPilot: () => void
 }
-export type StudioState = ProductionData & UIState & StudioActions & { storyboards: StoryboardRecord[] }
+export type StudioState = ProductionData & UIState & StudioActions & {
+  storyboards: StoryboardRecord[]
+  uploads: Record<string, AssetUploadState>
+  assetVersions: Record<string, AssetVersionRecord[]>
+  versionReview: VersionReviewNotice | null
+}

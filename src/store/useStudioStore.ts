@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { createPilot } from '../data/pilot'
-import type { StudioState, AssetStatus, CropMode, StageTab, WorkspaceView, Shot, StoryboardRecord, SyncStatus } from '../types/studio'
+import type { AssetVersionRecord, StudioState, AssetStatus, CropMode, StageTab, WorkspaceView, Shot, StoryboardRecord, SyncStatus } from '../types/studio'
 
 const defaultUI = {
   selectedShotId: 'shot-001', selectedAssetId: null, stageTab:'storyboard' as StageTab,
@@ -9,10 +9,24 @@ const defaultUI = {
   playheadFrame:0, zoom:1, syncStatus:'local' as SyncStatus, syncMessage:'Browser state available',
 }
 
+function mergeVersions(current: AssetVersionRecord[], incoming: AssetVersionRecord[]): AssetVersionRecord[] {
+  const byVersion = new Map(current.map(row => [row.version, row]))
+  for (const row of incoming) {
+    const existing = byVersion.get(row.version)
+    byVersion.set(row.version, {
+      ...existing, ...row,
+      sha256: row.sha256 ?? existing?.sha256 ?? null,
+      relativePath: row.relativePath ?? existing?.relativePath ?? null,
+    })
+  }
+  return [...byVersion.values()].sort((left, right) => left.version - right.version)
+}
+
 export const useStudioStore = create<StudioState>()(
   persist(
     (set) => ({
       ...createPilot(), ...defaultUI, storyboards: [] as StoryboardRecord[],
+      uploads: {}, assetVersions: {}, versionReview: null,
       setSyncStatus: (status, message) => set({ syncStatus:status, syncMessage:message }),
       selectShot: id => set(state => state.shots[id] ? { selectedShotId:id, playheadFrame:state.shots[id].startFrame, selectedAssetId:null } : {}),
       selectAsset: id => set(state => !id || state.assets[id] ? { selectedAssetId:id, stageTab:'assets' } : {}),
@@ -62,7 +76,50 @@ export const useStudioStore = create<StudioState>()(
         return { storyboards }
       }),
       removeStoryboard: id => set(state => ({ storyboards: state.storyboards.filter(board => board.id !== id) })),
-      resetPilot: () => set({...createPilot(),...defaultUI, storyboards: []}),
+      beginUpload: (assetId, fileName, total) => set(state => state.assets[assetId] ? {
+        uploads: { ...(state.uploads ?? {}), [assetId]: { fileName, loaded: 0, total, status: 'uploading' } },
+      } : {}),
+      setUploadProgress: (assetId, loaded, total) => set(state => {
+        const current = state.uploads?.[assetId]
+        if (!current || current.status !== 'uploading') return {}
+        return { uploads: { ...state.uploads, [assetId]: { ...current, loaded, total } } }
+      }),
+      failUpload: (assetId, message) => set(state => {
+        const current = state.uploads?.[assetId]
+        if (!current) return {}
+        return { uploads: { ...state.uploads, [assetId]: { ...current, status: 'error', message } } }
+      }),
+      clearUpload: assetId => set(state => {
+        const uploads = { ...(state.uploads ?? {}) }
+        delete uploads[assetId]
+        return { uploads }
+      }),
+      replaceAssetVersions: (assetId, versions) => set(state => ({
+        assetVersions: { ...(state.assetVersions ?? {}), [assetId]: mergeVersions(state.assetVersions?.[assetId] ?? [], versions) },
+      })),
+      recordVerifiedUpload: (assetId, version) => set(state => {
+        const asset = state.assets[assetId]
+        if (!asset) return {}
+        const previous = state.uploads?.[assetId]
+        const shotIds = state.links.filter(link => link.assetId === assetId && link.pinnedVersion < version.version).map(link => link.shotId)
+        return {
+          assetVersions: { ...(state.assetVersions ?? {}), [assetId]: mergeVersions(state.assetVersions?.[assetId] ?? [], [version]) },
+          uploads: {
+            ...(state.uploads ?? {}),
+            [assetId]: {
+              fileName: previous?.fileName ?? version.description,
+              loaded: version.byteSize ?? previous?.loaded ?? 0,
+              total: version.byteSize ?? previous?.total ?? 0,
+              status: 'done',
+              sha256: version.sha256 ?? undefined,
+              version: version.version,
+            },
+          },
+          versionReview: shotIds.length > 0 ? { assetId, assetName: asset.name, version: version.version, shotIds } : null,
+        }
+      }),
+      dismissVersionReview: () => set({ versionReview: null }),
+      resetPilot: () => set({...createPilot(),...defaultUI, storyboards: [], uploads: {}, assetVersions: {}, versionReview: null}),
     }),
     {
       name:'blueprint-studios-bs-m1-v1',

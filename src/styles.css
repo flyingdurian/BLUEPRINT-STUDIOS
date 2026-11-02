@@ -12,3 +12,23 @@
 .sync-synced { color: #83cba9 !important; }
 .sync-action { border: 1px solid #566373; border-radius: 6px; color: #e5eaf2; background: #26313d; padding: 6px 9px; font: inherit; font-size: 11px; cursor: pointer; white-space: nowrap; }
 .sync-action:hover { border-color: #9bb1c5; }
+.asset-drop-shell{position:relative}
+.asset-drop-shell.file-over .asset-card{outline:1px dashed var(--teal);outline-offset:2px}
+.asset-drop-hint{position:absolute;inset:8px;display:grid;place-items:center;border-radius:8px;background:rgba(16,32,36,.88);color:#b7efe4;font-size:11px;letter-spacing:.4px;pointer-events:none;z-index:2}
+.asset-upload-progress{display:flex;align-items:center;gap:6px;margin-top:6px;color:#c5d5e2;font-size:10px}
+.asset-upload-bar{flex:1;height:4px;border-radius:99px;background:#24303a;overflow:hidden}
+.asset-upload-bar span{display:block;height:100%;background:var(--teal)}
+.asset-upload-progress button,.asset-review-banner button,.asset-review-notice button{border:0;background:transparent;color:#d5e4ef;padding:0}
+.asset-upload-error{margin:6px 0 0;color:#ec936e;font-size:11px}
+.asset-fingerprint{margin:6px 0 0;color:#9fd8cb;font-size:10px;letter-spacing:.2px;word-break:break-all}
+.muted-fingerprint{color:var(--muted)}
+.asset-upload-button{display:inline-flex;align-items:center;gap:5px;border:1px solid #3d5160;border-radius:5px;padding:4px 7px;color:#d5e4ef;font-size:11px;background:#18242e}
+.asset-upload-button input{display:none}
+.asset-publish-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.asset-version-panel{margin-top:8px;display:grid;gap:4px}
+.asset-version-heading{font-size:9px;letter-spacing:.8px;color:var(--muted)}
+.asset-version-panel ol{list-style:none;margin:0;padding:0;display:grid;gap:3px;max-height:92px;overflow:auto}
+.asset-version-panel li{display:grid;grid-template-columns:32px 72px 1fr;gap:6px;font-size:10px;color:#b7c6d2}
+.asset-review-count{display:inline-block;margin-top:7px;margin-left:6px;padding:3px 5px;border-radius:3px;background:#4a3424;color:#f0c39a;font-size:8px;letter-spacing:.7px;font-weight:850}
+.asset-review-banner,.asset-review-notice{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0;padding:8px 10px;border:1px solid #6a5338;border-radius:8px;background:#2a2118;color:#f0d2b0;font-size:12px}
+.asset-review-banner button,.asset-review-notice button{border:1px solid #6d5a45;border-radius:5px;background:#3a2d22;color:#f3ddc6;padding:3px 6px;font-size:10px}

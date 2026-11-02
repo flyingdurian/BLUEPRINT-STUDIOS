@@ -226,6 +226,53 @@ export class PersistenceBridge {
     this.saveBaseline(result.snapshot, result.storyboards)
   }
 
+  /** Revision to send with an upload. Local edits are flushed first so the file is not a second publish. */
+  async readyRevision(): Promise<number> {
+    await this.connect()
+    if (!this.matchesCheckpoint()) await this.connect()
+    const status = useStudioStore.getState().syncStatus
+    if (!this.checkpoint || !this.matchesCheckpoint() || status === 'conflict' || status === 'offline') {
+      throw new Error('Save the workspace to SQLite before uploading media')
+    }
+    return this.checkpoint.revision
+  }
+
+  /**
+   * Fold a server-hashed upload into the confirmed graph.
+   * Pins, status, and the selected shot stay as they were. The bridge does not publish a second version.
+   */
+  acceptUploadedVersion(assetId: string, version: number, revision: number): void {
+    if (!Number.isInteger(version) || version < 1) throw new Error('Uploaded version is invalid')
+    if (!Number.isInteger(revision) || revision < 0) throw new Error('Uploaded revision is invalid')
+    const checkpoint = this.checkpoint
+    if (!checkpoint) throw new Error('No confirmed SQLite revision')
+    const asset = useStudioStore.getState().assets[assetId]
+    const baseline = checkpoint.graph.assets[assetId]
+    if (!asset || !baseline) throw new Error(`Unknown asset: ${assetId}`)
+    if (version < asset.currentVersion || version < baseline.currentVersion) {
+      throw new Error(`Cannot decrement asset version: ${assetId}`)
+    }
+    this.suppress = true
+    try {
+      useStudioStore.setState(state => ({
+        assets: { ...state.assets, [assetId]: { ...state.assets[assetId], currentVersion: version } },
+      }))
+    } finally {
+      this.suppress = false
+    }
+    this.checkpoint = {
+      revision,
+      graph: {
+        ...checkpoint.graph,
+        assets: { ...checkpoint.graph.assets, [assetId]: { ...baseline, currentVersion: version } },
+      },
+      storyboards: checkpoint.storyboards,
+    }
+    writeCheckpoint(this.checkpoint)
+    this.journal.clear()
+    this.persistJournal()
+  }
+
   /** Explicitly discards the browser copy after remote/local conflict. */
   async useServerCopy(): Promise<void> {
     const snapshot = await this.client.getProjectSnapshot(PROJECT_ID)

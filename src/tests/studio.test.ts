@@ -74,6 +74,25 @@ describe('Tri-Link Zustand actions', () => {
     store.getState().removeStoryboard('board-1')
     expect(store.getState().storyboards).toEqual([])
   })
+  it('records a verified upload without moving pins, status, or the selected shot', () => {
+    const before = store.getState()
+    const shotId = before.selectedShotId
+    const status = before.assets['ast-mug'].status
+    const pins = before.links.filter(link => link.assetId === 'ast-mug').map(link => link.pinnedVersion)
+    store.getState().recordVerifiedUpload('ast-mug', {
+      version: before.assets['ast-mug'].currentVersion + 1,
+      sha256: 'ab'.repeat(32), relativePath: 'ab/cd/' + 'ab'.repeat(32),
+      description: 'sample.png', source: 'upload', byteSize: 12, mediaType: 'image/png',
+    })
+    const after = store.getState()
+    expect(after.selectedShotId).toBe(shotId)
+    expect(after.assets['ast-mug'].status).toBe(status)
+    expect(after.assets['ast-mug'].currentVersion).toBe(before.assets['ast-mug'].currentVersion)
+    expect(after.links.filter(link => link.assetId === 'ast-mug').map(link => link.pinnedVersion)).toEqual(pins)
+    expect(after.uploads['ast-mug'].sha256).toBe('ab'.repeat(32))
+    expect(after.versionReview?.assetId).toBe('ast-mug')
+    expect(after.versionReview?.shotIds.length).toBeGreaterThan(0)
+  })
   it('adding a shot does not change existing permanent IDs', () => {
     const before=[...store.getState().shotOrder]
     store.getState().addShot()

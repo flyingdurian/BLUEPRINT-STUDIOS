@@ -190,6 +190,29 @@ describe('BS-M2.1 persistence bridge', () => {
     expect(boards[0].notes).toBe('Revised still')
     expect(useStudioStore.getState().syncStatus).toBe('synced')
   })
+
+  it('accepts a hashed upload without publishing another version or moving pins', async () => {
+    let remote = snapshot(4)
+    const api = { getProjectSnapshot: vi.fn(async () => remote), listStoryboards: vi.fn(async () => []), syncBatch: vi.fn() } as unknown as ApiClient
+    const bridge = new PersistenceBridge(api)
+    await bridge.connect()
+    const before = useStudioStore.getState()
+    const pins = before.links.filter(link => link.assetId === 'ast-mug').map(link => link.pinnedVersion)
+    const nextVersion = before.assets['ast-mug'].currentVersion + 1
+    bridge.acceptUploadedVersion('ast-mug', nextVersion, 5)
+    const after = useStudioStore.getState()
+    expect(after.assets['ast-mug'].currentVersion).toBe(nextVersion)
+    expect(after.assets['ast-mug'].status).toBe(before.assets['ast-mug'].status)
+    expect(after.links.filter(link => link.assetId === 'ast-mug').map(link => link.pinnedVersion)).toEqual(pins)
+    expect(after.selectedShotId).toBe(before.selectedShotId)
+    remote = {
+      ...remote, revision: 5, project: { ...remote.project, revision: 5 },
+      assets: { ...remote.assets, 'ast-mug': { ...remote.assets['ast-mug'], currentVersion: nextVersion } },
+    }
+    await bridge.connect()
+    expect(api.syncBatch).not.toHaveBeenCalled()
+    expect(useStudioStore.getState().assets['ast-mug'].currentVersion).toBe(nextVersion)
+  })
 })
 
 describe('atomic mutation order', () => {
