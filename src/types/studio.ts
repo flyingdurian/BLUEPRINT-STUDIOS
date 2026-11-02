@@ -2,6 +2,7 @@ export type AssetCategory = 'rig' | 'environment' | 'prop' | 'graphic' | 'audio'
 export type AssetStatus = 'Concept' | '3D Modeling' | 'Rigging' | 'Tested & Ready'
 export type StageTab = 'storyboard' | 'assets'
 export type CropMode = 'both' | '9:16' | '16:9'
+export type SyncStatus = 'connecting' | 'synced' | 'offline' | 'pending' | 'conflict' | 'local'
 export type WorkspaceView = 'director' | 'agents' | 'calendar'
 export interface Shot {
   id: string  // immutable relation key, never re-ordered or recycled
@@ -36,6 +37,8 @@ export interface ProductionData {
   nextShotNumber: number
 }
 export interface UIState {
+  syncStatus: SyncStatus
+  syncMessage: string
   selectedShotId: string
   selectedAssetId: string | null
   stageTab: StageTab
@@ -45,6 +48,7 @@ export interface UIState {
   zoom: number
 }
 export interface StudioActions {
+  setSyncStatus: (status: SyncStatus, message: string) => void
   selectShot: (id: string) => void
   selectAsset: (id: string | null) => void
   setStageTab: (tab: StageTab) => void

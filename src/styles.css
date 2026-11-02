@@ -4,3 +4,11 @@
 
 /* Cross-pane asset relationship highlighting */
 .shot-block.asset-related:not(.shot-selected){border-color:#569c93;box-shadow:inset 2px 0 0 #70bcb0}.timeline-clip.related:not(.selected){border-color:#9bd2bf;box-shadow:inset 0 0 0 1px #87beb3}.asset-card.used-in-active:not(.asset-selected){border-color:#508e85}.asset-in-shot{display:inline-block;margin-top:7px;padding:3px 5px;border-radius:3px;background:#24443f;color:#a1ddcf;font-size:8px;letter-spacing:.7px;font-weight:850}
+
+/* BS-M2.1: visible persistence status and explicit conflict resolution. */
+.sync-offline { color: #e5b56b !important; }
+.sync-conflict { color: #ec936e !important; }
+.sync-pending, .sync-connecting { color: #b8c6d7 !important; }
+.sync-synced { color: #83cba9 !important; }
+.sync-action { border: 1px solid #566373; border-radius: 6px; color: #e5eaf2; background: #26313d; padding: 6px 9px; font: inherit; font-size: 11px; cursor: pointer; white-space: nowrap; }
+.sync-action:hover { border-color: #9bb1c5; }
