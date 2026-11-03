@@ -1,7 +1,8 @@
 ; Unapproved M4-E rig dummy. Not an identity master and not a playable action library.
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://actors/lead/LeadPropBinding.gd" id="1_bind"]
+[ext_resource type="Script" path="res://scripts/FaceMorphController.gd" id="2_face"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_body"]
 size = Vector3(0.42, 1.15, 0.22)
@@ -352,3 +353,7 @@ mesh = SubResource("BoxMesh_prop")
 
 [node name="Mug" type="MeshInstance3D" parent="."]
 mesh = SubResource("BoxMesh_prop")
+
+[node name="FaceMorphController" type="Node" parent="."]
+script = ExtResource("2_face")
+face_mesh_path = NodePath("../CharacterRoot/Visual/FaceMesh")
