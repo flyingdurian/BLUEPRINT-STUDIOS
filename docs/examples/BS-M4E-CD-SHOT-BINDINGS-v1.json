@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "blueprint.shot_face_light_binding.v1",
+  "stagePlanOwner": "BS-M4C (timing unchanged)",
+  "fps": 30,
+  "totalFrames": 2490,
+  "examples": [
+    {
+      "shotId": "shot-005",
+      "code": "SH_005",
+      "startFrame": 600,
+      "durationFrames": 180,
+      "faceCues": [
+        {
+          "startLocalFrame": 0,
+          "endLocalFrameExclusive": 18,
+          "from": "confused",
+          "to": "suspicious"
+        },
+        {
+          "startLocalFrame": 18,
+          "endLocalFrameExclusive": 180,
+          "from": "suspicious",
+          "to": "suspicious"
+        }
+      ],
+      "lightingProfile": "apartment_day",
+      "note": "Mug hand-to-face reading must stay clear"
+    },
+    {
+      "shotId": "shot-009",
+      "code": "SH_009",
+      "startFrame": 1380,
+      "durationFrames": 180,
+      "faceCues": [
+        {
+          "startLocalFrame": 0,
+          "endLocalFrameExclusive": 24,
+          "from": "polite",
+          "to": "frozen"
+        },
+        {
+          "startLocalFrame": 24,
+          "endLocalFrameExclusive": 180,
+          "from": "frozen",
+          "to": "frozen"
+        }
+      ],
+      "lightingProfile": "apartment_day",
+      "blinkEvents": [],
+      "note": "Freeze at frame 24, do not let procedural blink run"
+    },
+    {
+      "shotId": "shot-014",
+      "code": "SH_014",
+      "startFrame": 2310,
+      "durationFrames": 180,
+      "faceCues": [
+        {
+          "startLocalFrame": 0,
+          "endLocalFrameExclusive": 30,
+          "from": "exhausted",
+          "to": "deadpan"
+        },
+        {
+          "startLocalFrame": 30,
+          "endLocalFrameExclusive": 180,
+          "from": "deadpan",
+          "to": "deadpan"
+        }
+      ],
+      "lightingProfile": "apartment_day",
+      "blinkEvents": [],
+      "note": "Final held stare; no ambient blink until cut to black"
+    }
+  ],
+  "rules": {
+    "halfOpenFrameRanges": true,
+    "doNotRewriteStagePlanTiming": true,
+    "doNotAutoplayActionsFromScriptText": true,
+    "faceCueCoverage": "full local frame span; no gaps or overlaps",
+    "qualityFinal": "fail closed when mesh shapes/preset resources/lighting scene unavailable"
+  }
+}

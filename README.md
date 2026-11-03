@@ -1,13 +1,28 @@
-# BS-M4-B Godot 4.7.2 render proof
+# BLUEPRINT STUDIOS — M4E-C + M4E-D Contracts
 
-**Standalone, additive files for the exact `flyingdurian/BLUEPRINT-STUDIOS` monorepo root.**
+This is an **additive, documentation-first** handoff for `flyingdurian/BLUEPRINT-STUDIOS`, intended after Cursor merges M4E-A / M4E-B. No existing code file should be overwritten.
 
-Quick start (Windows PowerShell):
+Contents:
+- `docs/BS-M4E-C-FACIAL-MORPH-CONTRACT.md`: exact 22-name contract, full preset explanation, deterministic face sampling
+- `docs/BS-M4E-D-APARTMENT-LIGHTING-CONTRACT.md`: 1080×1920 Forward+ lighting, native Godot property names, shadow / tonemapping policy
+- `docs/examples/BS-M4E-C-FACE-PRESETS-v2.json`: **normative full 176 weights** (22 x 8)
+- `docs/examples/BS-M4E-D-LIGHTING-PROFILES-v2.json`: **normative lighting profiles**, environment, project settings
+- `docs/examples/BS-M4E-CD-SHOT-BINDINGS-v1.json`: look-dev example facial cues for 3 shots
+- `godot_render/scripts/FaceMorphControllerExample.gd`: example-only expression evaluator (not a replacement for Cursor modules)
+- `godot_render/scripts/StudioLightingBuilderExample.gd`: example-only lighting builder (not a replacement for Cursor modules)
+- `tools/validate_m4e_cd.py`: contract-only validator
+- `docs/BS-M4E-CD-CURSOR-HANDOFF.md`: implementation and acceptance brief
 
-```powershell
-& .\tools\run_m4b_proof.ps1 -GodotExe 'C:\path\to\Godot_v4.7.2-stable_win64_console.exe'
+Run from repository root (after extraction):
+
+```bash
+python tools/validate_m4e_cd.py --stage-plan docs/examples/BS-M4-PILOT-STAGE-PLAN.json
 ```
 
-Read `docs/BS-M4B-FIVE-SECOND-GODOT-PROOF.md` for the pinned asset contract, direct CLI invocation, verification and next steps. No original BS-M1/M2/M3 files are included or overwritten.
+If stage-plan path differs, replace that path with the authoritative file from M4-C. The validator also runs without `--stage-plan` but then cannot assert stage-plan equality.
 
-**Verification status:** test fixture and SHA manifest generated and hash-checked; Python verifier syntax compiled; Godot itself not installed in authoring environment, so the GDScript and actual 150-frame AVI have **not** yet been run/verified here.
+**Git:** commit the documentation JSON and validator as one atomic change after M4E-A/B are merged and current production contracts are checked. Suggested message:
+
+`docs(bs-m4e-cd): lock 22-channel facial and Forward+ lighting contracts`
+
+**Caution:** Numeric face weights, light intensity and positions are provisional look-dev values, not owner-approved final appearance. No new Godot render was executed in this package.

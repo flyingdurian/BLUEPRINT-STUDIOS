@@ -1,0 +1,497 @@
+{
+  "schemaVersion": "blueprint.face_morphs.v2",
+  "specStatus": "PROPOSED_NOT_ART_APPROVED",
+  "engineTarget": "Godot 4.7.2",
+  "sourceContract": "BS-M4E-FACIAL-RIG.json (v1); preserve exact names and baseline weights",
+  "assetId": "ast-lead",
+  "meshNodeName": "FaceMesh",
+  "meshNodePath": "Visual/FaceMesh",
+  "expectedChannelCount": 22,
+  "import": {
+    "format": "glTF 2.0 (.glb)",
+    "blendShapeMode": "normalized",
+    "nameMatching": "exact-case-sensitive",
+    "requiredTopology": "same vertex order and count across all shape keys",
+    "binding": "explicit MeshInstance3D.skeleton NodePath to Skeleton3D"
+  },
+  "channels": [
+    {
+      "name": "BrowInnerUp",
+      "index": 0,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "BrowOuterUp_L",
+      "index": 1,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "BrowOuterUp_R",
+      "index": 2,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "BrowDown_L",
+      "index": 3,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "BrowDown_R",
+      "index": 4,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "EyeWide_L",
+      "index": 5,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "EyeWide_R",
+      "index": 6,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "EyeSquint_L",
+      "index": 7,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "EyeSquint_R",
+      "index": 8,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "LidClose_L",
+      "index": 9,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "LidClose_R",
+      "index": 10,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "CheekRaise_L",
+      "index": 11,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "CheekRaise_R",
+      "index": 12,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "Smile_L",
+      "index": 13,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "Smile_R",
+      "index": 14,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "Frown_L",
+      "index": 15,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "Frown_R",
+      "index": 16,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "LipPress",
+      "index": 17,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "MouthOpen",
+      "index": 18,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "JawDrop",
+      "index": 19,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "MouthTight",
+      "index": 20,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    },
+    {
+      "name": "MouthCornerDown",
+      "index": 21,
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0
+    }
+  ],
+  "presets": {
+    "relieved": {
+      "weights": {
+        "BrowInnerUp": 0.0,
+        "BrowOuterUp_L": 0.0,
+        "BrowOuterUp_R": 0.0,
+        "BrowDown_L": 0.0,
+        "BrowDown_R": 0.0,
+        "EyeWide_L": 0.0,
+        "EyeWide_R": 0.0,
+        "EyeSquint_L": 0.0,
+        "EyeSquint_R": 0.0,
+        "LidClose_L": 0.15,
+        "LidClose_R": 0.15,
+        "CheekRaise_L": 0.2,
+        "CheekRaise_R": 0.2,
+        "Smile_L": 0.35,
+        "Smile_R": 0.35,
+        "Frown_L": 0.0,
+        "Frown_R": 0.0,
+        "LipPress": 0.0,
+        "MouthOpen": 0.0,
+        "JawDrop": 0.0,
+        "MouthTight": 0.0,
+        "MouthCornerDown": 0.0
+      },
+      "intent": "relief after muting a group chat, soft eyes"
+    },
+    "polite": {
+      "weights": {
+        "BrowInnerUp": 0.0,
+        "BrowOuterUp_L": 0.12,
+        "BrowOuterUp_R": 0.12,
+        "BrowDown_L": 0.0,
+        "BrowDown_R": 0.0,
+        "EyeWide_L": 0.0,
+        "EyeWide_R": 0.0,
+        "EyeSquint_L": 0.0,
+        "EyeSquint_R": 0.0,
+        "LidClose_L": 0.0,
+        "LidClose_R": 0.0,
+        "CheekRaise_L": 0.0,
+        "CheekRaise_R": 0.0,
+        "Smile_L": 0.38,
+        "Smile_R": 0.38,
+        "Frown_L": 0.0,
+        "Frown_R": 0.0,
+        "LipPress": 0.14,
+        "MouthOpen": 0.0,
+        "JawDrop": 0.0,
+        "MouthTight": 0.0,
+        "MouthCornerDown": 0.0
+      },
+      "intent": "obliging smile hiding concern"
+    },
+    "suspicious": {
+      "weights": {
+        "BrowInnerUp": 0.0,
+        "BrowOuterUp_L": 0.0,
+        "BrowOuterUp_R": 0.0,
+        "BrowDown_L": 0.55,
+        "BrowDown_R": 0.2,
+        "EyeWide_L": 0.0,
+        "EyeWide_R": 0.0,
+        "EyeSquint_L": 0.5,
+        "EyeSquint_R": 0.24,
+        "LidClose_L": 0.0,
+        "LidClose_R": 0.0,
+        "CheekRaise_L": 0.0,
+        "CheekRaise_R": 0.0,
+        "Smile_L": 0.0,
+        "Smile_R": 0.0,
+        "Frown_L": 0.0,
+        "Frown_R": 0.0,
+        "LipPress": 0.22,
+        "MouthOpen": 0.0,
+        "JawDrop": 0.0,
+        "MouthTight": 0.4,
+        "MouthCornerDown": 0.0
+      },
+      "intent": "one eye narrows; tea becomes private"
+    },
+    "confused": {
+      "weights": {
+        "BrowInnerUp": 0.7,
+        "BrowOuterUp_L": 0.34,
+        "BrowOuterUp_R": 0.16,
+        "BrowDown_L": 0.0,
+        "BrowDown_R": 0.0,
+        "EyeWide_L": 0.0,
+        "EyeWide_R": 0.25,
+        "EyeSquint_L": 0.0,
+        "EyeSquint_R": 0.0,
+        "LidClose_L": 0.0,
+        "LidClose_R": 0.0,
+        "CheekRaise_L": 0.0,
+        "CheekRaise_R": 0.0,
+        "Smile_L": 0.0,
+        "Smile_R": 0.0,
+        "Frown_L": 0.0,
+        "Frown_R": 0.0,
+        "LipPress": 0.0,
+        "MouthOpen": 0.2,
+        "JawDrop": 0.0,
+        "MouthTight": 0.0,
+        "MouthCornerDown": 0.0
+      },
+      "intent": "the obvious choices stop making sense"
+    },
+    "confident": {
+      "weights": {
+        "BrowInnerUp": 0.0,
+        "BrowOuterUp_L": 0.0,
+        "BrowOuterUp_R": 0.0,
+        "BrowDown_L": 0.0,
+        "BrowDown_R": 0.0,
+        "EyeWide_L": 0.0,
+        "EyeWide_R": 0.0,
+        "EyeSquint_L": 0.12,
+        "EyeSquint_R": 0.12,
+        "LidClose_L": 0.0,
+        "LidClose_R": 0.0,
+        "CheekRaise_L": 0.34,
+        "CheekRaise_R": 0.34,
+        "Smile_L": 0.5,
+        "Smile_R": 0.5,
+        "Frown_L": 0.0,
+        "Frown_R": 0.0,
+        "LipPress": 0.0,
+        "MouthOpen": 0.0,
+        "JawDrop": 0.0,
+        "MouthTight": 0.0,
+        "MouthCornerDown": 0.0
+      },
+      "intent": "the obviously naive \"anything works\" optimism"
+    },
+    "frozen": {
+      "weights": {
+        "BrowInnerUp": 0.35,
+        "BrowOuterUp_L": 0.65,
+        "BrowOuterUp_R": 0.65,
+        "BrowDown_L": 0.0,
+        "BrowDown_R": 0.0,
+        "EyeWide_L": 0.8,
+        "EyeWide_R": 0.8,
+        "EyeSquint_L": 0.0,
+        "EyeSquint_R": 0.0,
+        "LidClose_L": 0.0,
+        "LidClose_R": 0.0,
+        "CheekRaise_L": 0.0,
+        "CheekRaise_R": 0.0,
+        "Smile_L": 0.0,
+        "Smile_R": 0.0,
+        "Frown_L": 0.0,
+        "Frown_R": 0.0,
+        "LipPress": 0.0,
+        "MouthOpen": 0.22,
+        "JawDrop": 0.55,
+        "MouthTight": 0.0,
+        "MouthCornerDown": 0.0
+      },
+      "intent": "eyes wider and mouth slack at unexpected responsibility"
+    },
+    "deadpan": {
+      "weights": {
+        "BrowInnerUp": 0.0,
+        "BrowOuterUp_L": 0.0,
+        "BrowOuterUp_R": 0.0,
+        "BrowDown_L": 0.08,
+        "BrowDown_R": 0.08,
+        "EyeWide_L": 0.0,
+        "EyeWide_R": 0.0,
+        "EyeSquint_L": 0.0,
+        "EyeSquint_R": 0.0,
+        "LidClose_L": 0.1,
+        "LidClose_R": 0.1,
+        "CheekRaise_L": 0.0,
+        "CheekRaise_R": 0.0,
+        "Smile_L": 0.0,
+        "Smile_R": 0.0,
+        "Frown_L": 0.0,
+        "Frown_R": 0.0,
+        "LipPress": 0.18,
+        "MouthOpen": 0.0,
+        "JawDrop": 0.0,
+        "MouthTight": 0.0,
+        "MouthCornerDown": 0.0
+      },
+      "intent": "controlled stillness and near-flat mouth"
+    },
+    "exhausted": {
+      "weights": {
+        "BrowInnerUp": 0.28,
+        "BrowOuterUp_L": 0.0,
+        "BrowOuterUp_R": 0.0,
+        "BrowDown_L": 0.0,
+        "BrowDown_R": 0.0,
+        "EyeWide_L": 0.0,
+        "EyeWide_R": 0.0,
+        "EyeSquint_L": 0.0,
+        "EyeSquint_R": 0.0,
+        "LidClose_L": 0.42,
+        "LidClose_R": 0.42,
+        "CheekRaise_L": 0.0,
+        "CheekRaise_R": 0.0,
+        "Smile_L": 0.0,
+        "Smile_R": 0.0,
+        "Frown_L": 0.25,
+        "Frown_R": 0.25,
+        "LipPress": 0.0,
+        "MouthOpen": 0.0,
+        "JawDrop": 0.08,
+        "MouthTight": 0.0,
+        "MouthCornerDown": 0.38
+      },
+      "intent": "heavy eyelids and lowered corners, paired with body slump"
+    }
+  },
+  "neutral": {
+    "weights": {
+      "BrowInnerUp": 0.0,
+      "BrowOuterUp_L": 0.0,
+      "BrowOuterUp_R": 0.0,
+      "BrowDown_L": 0.0,
+      "BrowDown_R": 0.0,
+      "EyeWide_L": 0.0,
+      "EyeWide_R": 0.0,
+      "EyeSquint_L": 0.0,
+      "EyeSquint_R": 0.0,
+      "LidClose_L": 0.0,
+      "LidClose_R": 0.0,
+      "CheekRaise_L": 0.0,
+      "CheekRaise_R": 0.0,
+      "Smile_L": 0.0,
+      "Smile_R": 0.0,
+      "Frown_L": 0.0,
+      "Frown_R": 0.0,
+      "LipPress": 0.0,
+      "MouthOpen": 0.0,
+      "JawDrop": 0.0,
+      "MouthTight": 0.0,
+      "MouthCornerDown": 0.0
+    }
+  },
+  "rules": {
+    "unlistedChannelPolicy": "invalid: all 22 channels explicitly required in every pose",
+    "sourceOrder": "channels array is for deterministic serialization only; Godot import indices MUST resolve by name",
+    "weightRange": [
+      0.0,
+      1.0
+    ],
+    "interpolation": "smoothstep(t) = t*t*(3-2*t); t=clamp((localFrame-startLocalFrame)/(endLocalFrameExclusive-startLocalFrame),0,1)",
+    "sampling": "pure function of frozen shot ID and integer localFrame; never accumulate delta",
+    "transitionStart": "exact fromPose evaluated from known previous cue or explicit start preset; never infer mutable last frame",
+    "blink": {
+      "durationFrames": 4,
+      "approvedAllow": [
+        "relieved",
+        "polite",
+        "confused",
+        "confident",
+        "suspicious",
+        "exhausted"
+      ],
+      "noUnscheduledBlink": [
+        "frozen",
+        "deadpan"
+      ],
+      "channels": [
+        "LidClose_L",
+        "LidClose_R"
+      ],
+      "schedule": "authored frame indices only; disabled by default"
+    },
+    "eyeGaze": {
+      "boneNames": [
+        "Eye_L",
+        "Eye_R"
+      ],
+      "maxYawDegrees": 20,
+      "maxPitchDegrees": 12,
+      "separateFromMorphs": true
+    },
+    "conflicts": [
+      {
+        "a": "EyeWide_L",
+        "b": "EyeSquint_L"
+      },
+      {
+        "a": "EyeWide_R",
+        "b": "EyeSquint_R"
+      },
+      {
+        "a": "Smile_L",
+        "b": "Frown_L"
+      },
+      {
+        "a": "Smile_R",
+        "b": "Frown_R"
+      },
+      {
+        "a": "LidClose_L",
+        "b": "EyeWide_L"
+      },
+      {
+        "a": "LidClose_R",
+        "b": "EyeWide_R"
+      },
+      {
+        "a": "LipPress",
+        "b": "MouthOpen"
+      }
+    ],
+    "conflictResolution": "validate authored presets; for authored additive layers normalize conflicting channels by max rather than silently reshaping the approved base pose",
+    "faceAndBody": "Jaw bone must remain neutral during morph JawDrop unless a dedicated controlled jaw override is authored; avoid double rotation"
+  },
+  "acceptance": {
+    "missingShape": "hard-fail",
+    "extraShapes": "warn and require catalog approval",
+    "matchToleranceWeight": 1e-06,
+    "neutralRestAtFrameZero": true,
+    "expressionContactSheetRequired": true,
+    "repeatFrameMustMatch": true
+  }
+}

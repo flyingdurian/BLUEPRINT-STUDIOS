@@ -1,0 +1,194 @@
+{
+  "schemaVersion": "blueprint.apartment_lighting.v2",
+  "specStatus": "LOOKDEV_PROVISIONAL_NOT_APPROVED",
+  "engineTarget": "Godot 4.7.2",
+  "render": {
+    "method": "Forward+",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "reviewWidth": 540,
+    "reviewHeight": 960,
+    "masterFrames": 2490,
+    "colorSpace": "SDR Rec.709 export intent; verify FFmpeg metadata separately",
+    "usePhysicalLightUnits": false
+  },
+  "coordinateConvention": {
+    "unit": "meter",
+    "actorOrigin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "up": "+Y",
+    "frontCamera": "+Z looking toward -Z",
+    "note": "positions are look-dev starting positions and must be calibrated after set import"
+  },
+  "projectSettings": {
+    "rendering/lights_and_shadows/use_physical_light_units": false,
+    "rendering/lights_and_shadows/directional_shadow/size": 4096,
+    "rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality": 2,
+    "rendering/lights_and_shadows/positional_shadow/atlas_size": 4096,
+    "rendering/anti_aliasing/quality/msaa_3d": 2,
+    "rendering/anti_aliasing/quality/use_taa": false,
+    "rendering/anti_aliasing/quality/use_debanding": true
+  },
+  "globalEnvironment": {
+    "nodeType": "WorldEnvironment",
+    "uniquePerViewport": true,
+    "environment": {
+      "background_mode": "BG_COLOR",
+      "background_color": "#262d36",
+      "ambient_light_source": "AMBIENT_SOURCE_COLOR",
+      "ambient_light_color": "#c6d0de",
+      "ambient_light_energy": 0.35,
+      "reflected_light_source": "REFLECTION_SOURCE_DISABLED",
+      "tonemap_mode": "TONE_MAPPER_FILMIC",
+      "tonemap_exposure": 1.0,
+      "ssao_enabled": true,
+      "ssao_intensity": 0.65,
+      "ssao_radius": 0.45,
+      "ssao_power": 1.1,
+      "ssil_enabled": false,
+      "ssr_enabled": false,
+      "glow_enabled": false,
+      "fog_enabled": false
+    },
+    "cameraAttributes": {
+      "type": "CameraAttributesPractical",
+      "auto_exposure_enabled": false,
+      "exposure_multiplier": 1.0,
+      "dof_blur_far_enabled": false,
+      "dof_blur_near_enabled": false
+    }
+  },
+  "profiles": {
+    "apartment_day": {
+      "setKey": "apartment",
+      "key": {
+        "node": "WindowKey",
+        "nodeType": "DirectionalLight3D",
+        "positionMeters": [
+          -3.2,
+          4.5,
+          1.5
+        ],
+        "lookAtMeters": [
+          0.0,
+          1.3,
+          0.0
+        ],
+        "light_color": "#fff0dc",
+        "light_energy": 1.45,
+        "light_angular_distance": 0.6,
+        "shadow_enabled": true,
+        "shadow_blur": 1.3,
+        "shadow_bias": 0.08,
+        "shadow_normal_bias": 1.4,
+        "directional_shadow_mode": "SHADOW_PARALLEL_4_SPLITS",
+        "directional_shadow_max_distance": 10.0,
+        "directional_shadow_blend_splits": false,
+        "directional_shadow_fade_start": 0.85
+      },
+      "fill": {
+        "node": "FaceFill",
+        "nodeType": "OmniLight3D",
+        "positionMeters": [
+          1.3,
+          2.2,
+          2.5
+        ],
+        "light_color": "#e2ecff",
+        "light_energy": 0.35,
+        "light_specular": 0.35,
+        "omni_range": 4.0,
+        "omni_attenuation": 1.0,
+        "shadow_enabled": false
+      },
+      "rim": {
+        "node": "RimAccent",
+        "nodeType": "SpotLight3D",
+        "positionMeters": [
+          1.6,
+          2.7,
+          -1.8
+        ],
+        "lookAtMeters": [
+          0.0,
+          1.35,
+          0.0
+        ],
+        "light_color": "#e8edff",
+        "light_energy": 0.24,
+        "light_specular": 0.35,
+        "spot_range": 5.0,
+        "spot_angle": 32.0,
+        "spot_attenuation": 1.0,
+        "spot_angle_attenuation": 1.0,
+        "shadow_enabled": false
+      },
+      "materialStarts": {
+        "skinRoughness": 0.68,
+        "fabricRoughness": 0.86,
+        "ceramicRoughness": 0.38,
+        "phoneFrameRoughness": 0.42,
+        "metallicFabric": 0.0
+      },
+      "note": "A stylized warm daylight key; energy and colors are not measured physical lighting."
+    },
+    "phone_insert": {
+      "inherits": "apartment_day",
+      "setKey": "apartment",
+      "overrides": {
+        "rim": {
+          "light_energy": 0.1
+        },
+        "fill": {
+          "light_energy": 0.42
+        }
+      },
+      "note": "Suppress excessive specular glare on phone screen; maintain same ambient and tonemap."
+    },
+    "host_desk": {
+      "inherits": "apartment_day",
+      "setKey": "host_desk",
+      "overrides": {
+        "key": {
+          "light_energy": 1.2
+        },
+        "fill": {
+          "light_energy": 0.5
+        },
+        "rim": {
+          "light_energy": 0.18
+        }
+      },
+      "note": "Clearly nonliteral cutaway, but consistent face/exposure response."
+    }
+  },
+  "guide9x16": {
+    "kind": "editor_only_not_exported",
+    "primarySubjectRectPx": {
+      "left": 130,
+      "top": 230,
+      "right": 950,
+      "bottom": 1460
+    },
+    "note": "Provisional guides, not platform-guaranteed overlays."
+  },
+  "runtime": {
+    "profileSelect": "set once at shot boundary or exact deterministic frame",
+    "exposure": "fixed; no auto adaptation",
+    "cameraOverrides": "no per-camera WorldEnvironment override unless manifest names it",
+    "lightingNeverDependsOnDelta": true,
+    "shadowQualityChangesRequireNewLookdevVersion": true
+  },
+  "qualityGates": {
+    "maxUnintendedExposureDifferenceStops": 0.15,
+    "noAcneOrPeterPanning": true,
+    "noPhoneScreenBloom": true,
+    "noFaceShadowFlicker": true,
+    "captionsUnaffectedByGlow": true,
+    "repeatedFrameVisualDigestMatch": "compare lossless PNG under identical GPU/driver and settings; cross-hardware pixel equality not guaranteed"
+  }
+}
