@@ -1,0 +1,582 @@
+{
+  "schemaVersion": "blueprint.production.actions.v1",
+  "status": "PROPOSED_NOT_IMPLEMENTED",
+  "sourceStagePlanSchema": "blueprint.shotstageplan.v1",
+  "fps": 30,
+  "totalFrames": 2490,
+  "actionRegistry": {
+    "thumb_mute": {
+      "driver": "hand",
+      "resourceOrPreset": "hands/thumb_tap",
+      "status": "ASSET_REQUIRED"
+    },
+    "relief_exhale": {
+      "driver": "composite",
+      "resourceOrPreset": "react/exhale_relief",
+      "status": "ASSET_REQUIRED"
+    },
+    "mug_sip": {
+      "driver": "body",
+      "resourceOrPreset": "body/sip",
+      "status": "ASSET_REQUIRED"
+    },
+    "calm_exhale": {
+      "driver": "composite",
+      "resourceOrPreset": "react/exhale_relief",
+      "status": "ASSET_REQUIRED"
+    },
+    "finger_hesitation": {
+      "driver": "head_hand",
+      "resourceOrPreset": "head/hesitate",
+      "status": "ASSET_REQUIRED"
+    },
+    "suspicious_eye": {
+      "driver": "face",
+      "resourceOrPreset": "suspicious",
+      "status": "ASSET_REQUIRED"
+    },
+    "polite_smile": {
+      "driver": "face",
+      "resourceOrPreset": "polite",
+      "status": "ASSET_REQUIRED"
+    },
+    "defensive_palm": {
+      "driver": "body",
+      "resourceOrPreset": "body/defensive_palm",
+      "status": "ASSET_REQUIRED"
+    },
+    "smile_collapse": {
+      "driver": "face_transition",
+      "resourceOrPreset": "polite->confused",
+      "status": "ASSET_REQUIRED"
+    },
+    "look_to_mug": {
+      "driver": "head",
+      "resourceOrPreset": "head/look_at_mug",
+      "status": "ASSET_REQUIRED"
+    },
+    "shield_mug": {
+      "driver": "body",
+      "resourceOrPreset": "body/shield_object",
+      "status": "ASSET_REQUIRED"
+    },
+    "side_eye": {
+      "driver": "head",
+      "resourceOrPreset": "head/side_eye",
+      "status": "ASSET_REQUIRED"
+    },
+    "phone_scroll": {
+      "driver": "hand",
+      "resourceOrPreset": "hands/scroll",
+      "status": "ASSET_REQUIRED"
+    },
+    "abrupt_stop": {
+      "driver": "hand",
+      "resourceOrPreset": "hands/release",
+      "status": "ASSET_REQUIRED"
+    },
+    "deliberate_type": {
+      "driver": "hand",
+      "resourceOrPreset": "hands/type_loop",
+      "status": "ASSET_REQUIRED"
+    },
+    "tiny_confident_smile": {
+      "driver": "face",
+      "resourceOrPreset": "confident",
+      "status": "ASSET_REQUIRED"
+    },
+    "put_down_phone": {
+      "driver": "body",
+      "resourceOrPreset": "body/putdown",
+      "status": "ASSET_REQUIRED"
+    },
+    "recline": {
+      "driver": "body",
+      "resourceOrPreset": "body/recline",
+      "status": "ASSET_REQUIRED"
+    },
+    "victory_still": {
+      "driver": "hold",
+      "resourceOrPreset": "react/anticipation_hold",
+      "status": "ASSET_REQUIRED"
+    },
+    "auto_polite_nod": {
+      "driver": "head",
+      "resourceOrPreset": "head/nod",
+      "status": "ASSET_REQUIRED"
+    },
+    "freeze_mid_nod": {
+      "driver": "head",
+      "resourceOrPreset": "head/freeze_nod",
+      "status": "ASSET_REQUIRED"
+    },
+    "answer_phone": {
+      "driver": "body",
+      "resourceOrPreset": "body/phone_to_ear",
+      "status": "ASSET_REQUIRED"
+    },
+    "stamp_papers": {
+      "driver": "body",
+      "resourceOrPreset": "body/host_chaos",
+      "status": "ASSET_REQUIRED"
+    },
+    "panic_head_swivel": {
+      "driver": "head",
+      "resourceOrPreset": "head/panic_swivel",
+      "status": "ASSET_REQUIRED"
+    },
+    "deadpan_stare": {
+      "driver": "face",
+      "resourceOrPreset": "deadpan",
+      "status": "ASSET_REQUIRED"
+    },
+    "thankyou_eyebrow_bounce": {
+      "driver": "reaction",
+      "resourceOrPreset": "react/eyebrow_bounce",
+      "status": "ASSET_REQUIRED"
+    },
+    "type_refusal": {
+      "driver": "hand",
+      "resourceOrPreset": "hands/type_loop",
+      "status": "ASSET_REQUIRED"
+    },
+    "thumb_freeze": {
+      "driver": "hand",
+      "resourceOrPreset": "hands/release",
+      "status": "ASSET_REQUIRED"
+    },
+    "slump": {
+      "driver": "body",
+      "resourceOrPreset": "body/slump",
+      "status": "ASSET_REQUIRED"
+    },
+    "put_phone_in_drawer": {
+      "driver": "body",
+      "resourceOrPreset": "body/drawer_reach",
+      "status": "ASSET_REQUIRED"
+    },
+    "gentle_close": {
+      "driver": "hand",
+      "resourceOrPreset": "hands/release",
+      "status": "ASSET_REQUIRED"
+    },
+    "coordinator_badge_reveal": {
+      "driver": "overlay",
+      "resourceOrPreset": "ui/badge_reveal",
+      "status": "ASSET_REQUIRED"
+    },
+    "deadpan": {
+      "driver": "face",
+      "resourceOrPreset": "deadpan",
+      "status": "ASSET_REQUIRED"
+    },
+    "cut_black": {
+      "driver": "overlay",
+      "resourceOrPreset": "ui/cut_to_black",
+      "status": "ASSET_REQUIRED"
+    }
+  },
+  "shots": [
+    {
+      "shotId": "shot-001",
+      "code": "SH_001",
+      "startFrame": 0,
+      "durationFrames": 120,
+      "cameraPreset": "medium_three_quarter",
+      "setKey": "apartment_nook",
+      "initialFacePose": "relieved",
+      "actionCues": [
+        {
+          "actionId": "thumb_mute",
+          "startLocalFrame": 0,
+          "endLocalFrameExclusive": 65
+        },
+        {
+          "actionId": "relief_exhale",
+          "startLocalFrame": 55,
+          "endLocalFrameExclusive": 120
+        }
+      ],
+      "propAnchors": {
+        "phone": "phone_grip_r",
+        "mug": "mug_rest"
+      },
+      "lightingPreset": "apartment_day"
+    },
+    {
+      "shotId": "shot-002",
+      "code": "SH_002",
+      "startFrame": 120,
+      "durationFrames": 180,
+      "cameraPreset": "wide_profile",
+      "setKey": "apartment_nook",
+      "initialFacePose": "relieved",
+      "actionCues": [
+        {
+          "actionId": "mug_sip",
+          "startLocalFrame": 0,
+          "endLocalFrameExclusive": 110
+        },
+        {
+          "actionId": "calm_exhale",
+          "startLocalFrame": 100,
+          "endLocalFrameExclusive": 180
+        }
+      ],
+      "propAnchors": {
+        "phone": "table_phone_rest",
+        "mug": "mug_grip_r"
+      },
+      "lightingPreset": "apartment_day"
+    },
+    {
+      "shotId": "shot-003",
+      "code": "SH_003",
+      "startFrame": 300,
+      "durationFrames": 150,
+      "cameraPreset": "phone_extreme_closeup",
+      "setKey": "phone_insert",
+      "initialFacePose": "suspicious",
+      "actionCues": [
+        {
+          "actionId": "finger_hesitation",
+          "startLocalFrame": 0,
+          "endLocalFrameExclusive": 90
+        },
+        {
+          "actionId": "suspicious_eye",
+          "startLocalFrame": 70,
+          "endLocalFrameExclusive": 150
+        }
+      ],
+      "propAnchors": {
+        "phone": "phone_grip_r",
+        "mug": "mug_rest"
+      },
+      "lightingPreset": "phone_insert"
+    },
+    {
+      "shotId": "shot-004",
+      "code": "SH_004",
+      "startFrame": 450,
+      "durationFrames": 150,
+      "cameraPreset": "medium_front",
+      "setKey": "apartment_nook",
+      "initialFacePose": "polite",
+      "actionCues": [
+        {
+          "actionId": "polite_smile",
+          "startLocalFrame": 0,
+          "endLocalFrameExclusive": 95
+        },
+        {
+          "actionId": "defensive_palm",
+          "startLocalFrame": 35,
+          "endLocalFrameExclusive": 100
+        },
+        {
+          "actionId": "smile_collapse",
+          "startLocalFrame": 85,
+          "endLocalFrameExclusive": 150
+        }
+      ],
+      "propAnchors": {
+        "phone": "phone_grip_r",
+        "mug": "mug_rest"
+      },
+      "lightingPreset": "apartment_day"
+    },
+    {
+      "shotId": "shot-005",
+      "code": "SH_005",
+      "startFrame": 600,
+      "durationFrames": 180,
+      "cameraPreset": "tight_mug_reaction",
+      "setKey": "apartment_nook",
+      "initialFacePose": "suspicious",
+      "actionCues": [
+        {
+          "actionId": "look_to_mug",
+          "startLocalFrame": 0,
+          "endLocalFrameExclusive": 48
+        },
+        {
+          "actionId": "shield_mug",
+          "startLocalFrame": 30,
+          "endLocalFrameExclusive": 136
+        },
+        {
+          "actionId": "side_eye",
+          "startLocalFrame": 104,
+          "endLocalFrameExclusive": 180
+        }
+      ],
+      "propAnchors": {
+        "phone": "phone_grip_r",
+        "mug": "mug_grip_r_or_two_handed_gag"
+      },
+      "lightingPreset": "apartment_day"
+    },
+    {
+      "shotId": "shot-006",
+      "code": "SH_006",
+      "startFrame": 780,
+      "durationFrames": 180,
+      "cameraPreset": "over_shoulder_phone",
+      "setKey": "phone_insert",
+      "initialFacePose": "confused",
+      "actionCues": [
+        {
+          "actionId": "phone_scroll",
+          "startLocalFrame": 0,
+          "endLocalFrameExclusive": 155
+        },
+        {
+          "actionId": "abrupt_stop",
+          "startLocalFrame": 150,
+          "endLocalFrameExclusive": 180
+        }
+      ],
+      "propAnchors": {
+        "phone": "phone_grip_l",
+        "mug": "mug_rest"
+      },
+      "lightingPreset": "phone_insert"
+    },
+    {
+      "shotId": "shot-007",
+      "code": "SH_007",
+      "startFrame": 960,
+      "durationFrames": 210,
+      "cameraPreset": "medium_phone_foreground",
+      "setKey": "apartment_nook",
+      "initialFacePose": "confident",
+      "actionCues": [
+        {
+          "actionId": "deliberate_type",
+          "startLocalFrame": 0,
+          "endLocalFrameExclusive": 150
+        },
+        {
+          "actionId": "tiny_confident_smile",
+          "startLocalFrame": 125,
+          "endLocalFrameExclusive": 210
+        }
+      ],
+      "propAnchors": {
+        "phone": "phone_grip_l",
+        "mug": "mug_rest"
+      },
+      "lightingPreset": "apartment_day"
+    },
+    {
+      "shotId": "shot-008",
+      "code": "SH_008",
+      "startFrame": 1170,
+      "durationFrames": 210,
+      "cameraPreset": "symmetric_wide",
+      "setKey": "apartment_nook",
+      "initialFacePose": "confident",
+      "actionCues": [
+        {
+          "actionId": "put_down_phone",
+          "startLocalFrame": 0,
+          "endLocalFrameExclusive": 78
+        },
+        {
+          "actionId": "recline",
+          "startLocalFrame": 70,
+          "endLocalFrameExclusive": 145
+        },
+        {
+          "actionId": "victory_still",
+          "startLocalFrame": 136,
+          "endLocalFrameExclusive": 210
+        }
+      ],
+      "propAnchors": {
+        "phone": "phone_grip_r_to_table",
+        "mug": "mug_rest"
+      },
+      "lightingPreset": "apartment_day"
+    },
+    {
+      "shotId": "shot-009",
+      "code": "SH_009",
+      "startFrame": 1380,
+      "durationFrames": 180,
+      "cameraPreset": "split_call",
+      "setKey": "apartment_nook",
+      "initialFacePose": "polite",
+      "actionCues": [
+        {
+          "actionId": "auto_polite_nod",
+          "startLocalFrame": 0,
+          "endLocalFrameExclusive": 110
+        },
+        {
+          "actionId": "freeze_mid_nod",
+          "startLocalFrame": 100,
+          "endLocalFrameExclusive": 180
+        }
+      ],
+      "propAnchors": {
+        "phone": "phone_grip_r",
+        "mug": "mug_rest"
+      },
+      "lightingPreset": "apartment_day"
+    },
+    {
+      "shotId": "shot-010",
+      "code": "SH_010",
+      "startFrame": 1560,
+      "durationFrames": 180,
+      "cameraPreset": "cutaway_wide_reveal",
+      "setKey": "host_desk_cutaway",
+      "initialFacePose": "confused",
+      "actionCues": [
+        {
+          "actionId": "answer_phone",
+          "startLocalFrame": 0,
+          "endLocalFrameExclusive": 110
+        },
+        {
+          "actionId": "stamp_papers",
+          "startLocalFrame": 25,
+          "endLocalFrameExclusive": 150
+        },
+        {
+          "actionId": "panic_head_swivel",
+          "startLocalFrame": 130,
+          "endLocalFrameExclusive": 180
+        }
+      ],
+      "propAnchors": {
+        "phone": "cutaway_cloned_phones",
+        "mug": "not_visible"
+      },
+      "lightingPreset": "host_desk"
+    },
+    {
+      "shotId": "shot-011",
+      "code": "SH_011",
+      "startFrame": 1740,
+      "durationFrames": 180,
+      "cameraPreset": "medium_deadpan",
+      "setKey": "apartment_nook",
+      "initialFacePose": "deadpan",
+      "actionCues": [
+        {
+          "actionId": "deadpan_stare",
+          "startLocalFrame": 0,
+          "endLocalFrameExclusive": 180
+        },
+        {
+          "actionId": "thankyou_eyebrow_bounce",
+          "startLocalFrame": 100,
+          "endLocalFrameExclusive": 125
+        }
+      ],
+      "propAnchors": {
+        "phone": "phone_grip_r",
+        "mug": "mug_rest"
+      },
+      "lightingPreset": "apartment_day"
+    },
+    {
+      "shotId": "shot-012",
+      "code": "SH_012",
+      "startFrame": 1920,
+      "durationFrames": 210,
+      "cameraPreset": "over_shoulder_then_reaction",
+      "setKey": "phone_insert",
+      "initialFacePose": "exhausted",
+      "actionCues": [
+        {
+          "actionId": "type_refusal",
+          "startLocalFrame": 0,
+          "endLocalFrameExclusive": 120
+        },
+        {
+          "actionId": "thumb_freeze",
+          "startLocalFrame": 115,
+          "endLocalFrameExclusive": 160
+        },
+        {
+          "actionId": "slump",
+          "startLocalFrame": 142,
+          "endLocalFrameExclusive": 210
+        }
+      ],
+      "propAnchors": {
+        "phone": "phone_grip_l",
+        "mug": "mug_rest"
+      },
+      "lightingPreset": "phone_insert"
+    },
+    {
+      "shotId": "shot-013",
+      "code": "SH_013",
+      "startFrame": 2130,
+      "durationFrames": 180,
+      "cameraPreset": "drawer_closeup",
+      "setKey": "apartment_nook",
+      "initialFacePose": "exhausted",
+      "actionCues": [
+        {
+          "actionId": "put_phone_in_drawer",
+          "startLocalFrame": 0,
+          "endLocalFrameExclusive": 120
+        },
+        {
+          "actionId": "gentle_close",
+          "startLocalFrame": 116,
+          "endLocalFrameExclusive": 180
+        }
+      ],
+      "propAnchors": {
+        "phone": "phone_grip_r_to_drawer",
+        "mug": "mug_rest"
+      },
+      "lightingPreset": "apartment_day"
+    },
+    {
+      "shotId": "shot-014",
+      "code": "SH_014",
+      "startFrame": 2310,
+      "durationFrames": 180,
+      "cameraPreset": "medium_to_wide",
+      "setKey": "apartment_nook",
+      "initialFacePose": "deadpan",
+      "actionCues": [
+        {
+          "actionId": "coordinator_badge_reveal",
+          "startLocalFrame": 0,
+          "endLocalFrameExclusive": 85
+        },
+        {
+          "actionId": "deadpan",
+          "startLocalFrame": 65,
+          "endLocalFrameExclusive": 165
+        },
+        {
+          "actionId": "cut_black",
+          "startLocalFrame": 165,
+          "endLocalFrameExclusive": 180
+        }
+      ],
+      "propAnchors": {
+        "phone": "drawer_phone_rest",
+        "mug": "mug_rest"
+      },
+      "lightingPreset": "apartment_day"
+    }
+  ],
+  "invariants": [
+    "every source action ID resolved",
+    "frames exact and half-open",
+    "no delta accumulation",
+    "no prop state drift",
+    "no unverified asset version in final"
+  ]
+}

@@ -5,7 +5,8 @@ param(
     [switch]$SkipCompile,
     [string]$ManifestPath = "",
     [string]$PythonExe = "",
-    [ValidateSet("ogv", "avi")][string]$Container = "ogv"
+    [ValidateSet("ogv", "avi")][string]$Container = "ogv",
+    [switch]$AssembleAudio
 )
 $ErrorActionPreference = "Stop"
 $repo = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
@@ -45,3 +46,8 @@ if ($LASTEXITCODE -ne 0) { throw "Godot exited with code $LASTEXITCODE" }
 & $PythonExe (Join-Path $PSScriptRoot "verify_m4c_video.py") $output
 if ($LASTEXITCODE -ne 0) { throw "Video verification failed" }
 Write-Host "M4-C PREVIS PASSED: $output"
+if ($AssembleAudio) {
+    if ($Container -ne "ogv") { throw "Audio assembly reads pilot-previs.ogv. Re-run without -Container avi." }
+    & $PythonExe (Join-Path $PSScriptRoot "assemble_m4d.py") --manifest $ManifestPath
+    if ($LASTEXITCODE -ne 0) { throw "Audio assembly failed" }
+}

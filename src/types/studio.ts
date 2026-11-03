@@ -1,6 +1,6 @@
 export type AssetCategory = 'rig' | 'environment' | 'prop' | 'graphic' | 'audio'
 export type AssetStatus = 'Concept' | '3D Modeling' | 'Rigging' | 'Tested & Ready'
-export type StageTab = 'storyboard' | 'assets'
+export type StageTab = 'storyboard' | 'assets' | 'render'
 export type CropMode = 'both' | '9:16' | '16:9'
 export type SyncStatus = 'connecting' | 'synced' | 'offline' | 'pending' | 'conflict' | 'local'
 export type WorkspaceView = 'director' | 'agents' | 'calendar'

@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react'
-import { Clapperboard, Film, Grid2X2, Image as ImageIcon, Layers3, Maximize2, Scan, SquareDashedMousePointer } from 'lucide-react'
+import { Clapperboard, Film, Grid2X2, Image as ImageIcon, Layers3, Maximize2, MonitorPlay, Scan, SquareDashedMousePointer } from 'lucide-react'
 import { useStudioStore } from '../store/useStudioStore'
 import { timecode } from '../utils/time'
 import { StoryboardArt } from './StoryboardArt'
 import { AssetMatrix } from './AssetMatrix'
+import { RenderInspector } from './RenderInspector'
 
 function StoryboardGallery() {
   const selectedId=useStudioStore(s=>s.selectedShotId)
@@ -45,7 +46,7 @@ export function VisualStage() {
   const linkedCount=useStudioStore(s=>Object.keys(s.assets).length)
   return <section className="pane stage-pane" aria-label="Visual stage and asset matrix">
     <div className="pane-header stage-heading"><div className="pane-heading-left"><span className="pane-icon teal"><Clapperboard size={17}/></span><div><h2>Visual Stage</h2><p>Compositions & production assets</p></div></div><button title="Preview is representative, not final animation" className="icon-button"><Maximize2 size={15}/></button></div>
-    <div className="stage-tabs"><button type="button" data-testid="tab-storyboard" className={tab==='storyboard'?'active':''} onClick={()=>setTab('storyboard')}><Film size={15}/> Spatial Storyboard</button><button type="button" data-testid="tab-assets" className={tab==='assets'?'active':''} onClick={()=>setTab('assets')}><Layers3 size={15}/> Asset Matrix <span>{linkedCount}</span></button></div>
-    <div className="stage-content">{tab==='storyboard'?<StoryboardGallery/>:<AssetMatrix/>}</div>
+    <div className="stage-tabs"><button type="button" data-testid="tab-storyboard" className={tab==='storyboard'?'active':''} onClick={()=>setTab('storyboard')}><Film size={15}/> Spatial Storyboard</button><button type="button" data-testid="tab-assets" className={tab==='assets'?'active':''} onClick={()=>setTab('assets')}><Layers3 size={15}/> Asset Matrix <span>{linkedCount}</span></button><button type="button" data-testid="tab-render" className={tab==='render'?'active':''} onClick={()=>setTab('render')}><MonitorPlay size={15}/> Render</button></div>
+    <div className="stage-content">{tab==='storyboard'?<StoryboardGallery/>:tab==='assets'?<AssetMatrix/>:<RenderInspector/>}</div>
   </section>
 }

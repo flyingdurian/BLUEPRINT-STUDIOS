@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .api import projects, shots, assets, storyboards, sync, uploads, render_manifests
+from .api import projects, shots, assets, storyboards, sync, uploads, render_manifests, render_assembly
 from .db import build_engine, init_database, make_session_factory
 
 
@@ -37,6 +37,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
     app.include_router(sync.router)
     app.include_router(uploads.router)
     app.include_router(render_manifests.router)
+    app.include_router(render_assembly.router)
 
     @app.get("/api/health", tags=["system"])
     def health() -> dict[str, str]:

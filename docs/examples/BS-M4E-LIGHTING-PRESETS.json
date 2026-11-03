@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "blueprint.lighting.v1",
+  "status": "LOOKDEV_STARTING_VALUES_NOT_APPROVED",
+  "engine": "Godot 4.7.2",
+  "renderingMethod": "gl_compatibility_renderer_not_allowed_for_final_use_ForwardPlus",
+  "canvas": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "reviewWidth": 540,
+    "reviewHeight": 960
+  },
+  "presets": {
+    "apartment_day": {
+      "key": {
+        "nodeType": "DirectionalLight3D",
+        "direction": "from_window_toward_character",
+        "energyStart": 1.45,
+        "colorLookKelvinApprox": 5000,
+        "shadow": true,
+        "directionalShadowMaxDistanceMeters": 10.0,
+        "shadowFilter": "PCF_baseline_PCSS_test"
+      },
+      "fill": {
+        "nodeType": "OmniLight3D",
+        "energyStart": 0.35,
+        "shadow": false,
+        "colorLookKelvinApprox": 6000
+      },
+      "rim": {
+        "nodeType": "SpotLight3D",
+        "energyStart": 0.24,
+        "shadow": false,
+        "colorLookKelvinApprox": 6400
+      },
+      "environment": {
+        "ambientEnergyStart": 0.35,
+        "autoExposure": false,
+        "tonemapping": "Filmic_or_ACES_choose_one_after_review",
+        "ssao": "subtle_provisional",
+        "ssil": "off_until_side_by_side_pass"
+      }
+    },
+    "phone_insert": {
+      "inherits": "apartment_day",
+      "override": "reduce_rim_on_closeups_and_screen_glare_to_preserve_UI"
+    },
+    "host_desk": {
+      "key": {
+        "nodeType": "DirectionalLight3D",
+        "energyStart": 1.2,
+        "shadow": true
+      },
+      "fill": {
+        "nodeType": "OmniLight3D",
+        "energyStart": 0.5,
+        "shadow": false
+      },
+      "environment": {
+        "autoExposure": false,
+        "tonemapping": "same_as_apartment",
+        "background": "distinct_nonliteral_color_matte"
+      }
+    }
+  },
+  "safeComposition": {
+    "ratio": "9:16",
+    "guideOnly": true,
+    "primarySubjectRectPx": {
+      "left": 130,
+      "top": 230,
+      "right": 950,
+      "bottom": 1460
+    },
+    "note": "Platform UI safe zones vary; validate using actual app previews."
+  },
+  "acceptance": [
+    "one active WorldEnvironment",
+    "key shadows no acne or floating props",
+    "identical lighting on repeat frame render",
+    "readable closeup eyes and phone UI",
+    "no glow on captions",
+    "no brightness pumping across hard cuts"
+  ]
+}
