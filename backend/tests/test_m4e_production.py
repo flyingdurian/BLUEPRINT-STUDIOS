@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import wave
 from pathlib import Path
 
 from app.services.render_manifest import production_manifest_blockers
@@ -31,50 +30,48 @@ def test_production_blockers_name_unresolved_rig_face_actions_and_light():
     assert "Forward+" in text
 
 
-def test_qc_refuses_previs_and_does_not_write_final(tmp_path: Path):
+def test_manifest_hash_mismatch_blocks_without_writing_final(tmp_path: Path):
     job = tmp_path / "job"
     job.mkdir()
-    manifest = {
-        "quality": "previs",
-        "productionLocked": False,
-        "fps": 30,
-        "totalFrames": 2490,
-        "shots": [],
-    }
-    (job / "render_manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    body = {"schemaVersion": "blueprint.render-manifest.v1", "quality": "previs", "shots": []}
+    raw = (json.dumps(body, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+    (job / "render_manifest.json").write_bytes(raw)
+    (job / "render_manifest.sha256").write_text("0" * 64 + "\n", encoding="utf-8")
     (job / "pilot-final.mp4").write_bytes(b"leave-me")
-    before = {path.name: path.read_bytes() for path in job.iterdir()}
-    report = _qc().inspect_candidate(job)
-    after = {path.name: path.read_bytes() for path in job.iterdir()}
-    assert report["encodeFinal"] is False
-    assert any("pilot-final.mp4" in error for error in report["errors"])
-    assert any("Unassigned material" in error for error in report["errors"])
-    assert before == after
+    qc = _qc()
+    args = qc.argparse.Namespace(
+        job_dir=job,
+        stage_plan=ROOT / "docs" / "examples" / "BS-M4-PILOT-STAGE-PLAN.json",
+        rig_contract=ROOT / "docs" / "examples" / "BS-M4E-RIG-CONTRACT.json",
+        face_contract=ROOT / "docs" / "examples" / "BS-M4E-FACIAL-RIG.json",
+        actions_contract=ROOT / "docs" / "examples" / "BS-M4E-ACTION-BINDINGS.json",
+        lighting_contract=ROOT / "docs" / "examples" / "BS-M4E-D-LIGHTING-PROFILES-v2.json",
+    )
+    payload, code = qc.run_qc(args)
+    assert code == 2
+    assert any(item["code"] == "MANIFEST_HASH" and item["expected"] != item["actual"] for item in payload["findings"])
+    assert payload["approvedForFinalPromotion"] is False
+    assert (job / "pilot-final.mp4").read_bytes() == b"leave-me"
 
 
-def test_qc_reports_short_narration_against_the_2490_frame_picture(tmp_path: Path):
-    job = tmp_path / "production-job"
-    job.mkdir()
-    manifest = {
-        "quality": "production",
-        "productionLocked": True,
-        "fps": 30,
-        "totalFrames": 2490,
-        "shots": [
-            {"code": f"SH_{index:03d}", "startFrame": (index - 1) * 120, "endFrameExclusive": index * 120}
-            for index in range(1, 15)
-        ],
-    }
-    # The real pilot is not 14 equal 120-frame shots. This fixture only checks the audio gate.
-    manifest["shots"][-1]["endFrameExclusive"] = 2490
-    (job / "render_manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
-    mix = job / "narration_mix.wav"
-    with wave.open(str(mix), "w") as handle:
-        handle.setnchannels(1)
-        handle.setsampwidth(2)
-        handle.setframerate(48000)
-        handle.writeframes(b"\x00\x00" * 480)
-    report = _qc().inspect_candidate(job)
-    assert report["encodeFinal"] is False
-    assert any("Narration mix" in error for error in report["errors"])
-    assert not (job / "pilot-final.mp4").exists()
+def test_contract_digest_codes_report_expected_and_actual():
+    qc = _qc()
+    report = qc.Report()
+    qc.validate_contract_hashes(
+        {
+            "skeletonContractSha256": "a" * 64,
+            "faceContractSha256": "b" * 64,
+            "actionRegistrySha256": "c" * 64,
+            "lightingContractSha256": "d" * 64,
+        },
+        {
+            "rig": ROOT / "docs" / "examples" / "BS-M4E-RIG-CONTRACT.json",
+            "face": ROOT / "docs" / "examples" / "BS-M4E-FACIAL-RIG.json",
+            "actions": ROOT / "docs" / "examples" / "BS-M4E-ACTION-BINDINGS.json",
+            "lighting": ROOT / "docs" / "examples" / "BS-M4E-D-LIGHTING-PROFILES-v2.json",
+        },
+        report,
+    )
+    codes = {item["code"] for item in report.findings}
+    assert {"SKELETON_CONTRACT_SHA", "FACE_CONTRACT_SHA", "ACTION_REGISTRY_SHA", "LIGHTING_CONTRACT_SHA"} <= codes
+    assert all("expected" in item and "actual" in item for item in report.findings)
