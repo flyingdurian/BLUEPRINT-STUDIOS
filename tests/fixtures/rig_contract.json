@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "blueprint.production.rig.v1",
+  "status": "BONE_AND_SOCKET_CONTRACT_NOT_AN_APPROVED_MODEL",
+  "assetId": "ast-lead",
+  "suggestedVersion": "v1_new_rig_requires_asset_version",
+  "coordinateConvention": {
+    "unit": "meter",
+    "up": "Y",
+    "forward": "-Z",
+    "characterHeightMetersProvisional": 1.7
+  },
+  "requiredBones": [
+    "Root",
+    "Hips",
+    "Spine_01",
+    "Spine_02",
+    "Chest",
+    "Neck",
+    "Head",
+    "Jaw",
+    "Clavicle_L",
+    "Clavicle_R",
+    "UpperArm_L",
+    "UpperArm_R",
+    "LowerArm_L",
+    "LowerArm_R",
+    "Hand_L",
+    "Hand_R",
+    "UpperLeg_L",
+    "UpperLeg_R",
+    "LowerLeg_L",
+    "LowerLeg_R",
+    "Foot_L",
+    "Foot_R",
+    "Toe_L",
+    "Toe_R",
+    "Thumb_01_L",
+    "Thumb_02_L",
+    "Index_01_L",
+    "Index_02_L",
+    "Middle_01_L",
+    "Middle_02_L",
+    "RingPinky_01_L",
+    "Thumb_01_R",
+    "Thumb_02_R",
+    "Index_01_R",
+    "Index_02_R",
+    "Middle_01_R",
+    "Middle_02_R",
+    "RingPinky_01_R",
+    "Eye_L",
+    "Eye_R"
+  ],
+  "requiredMeshInstances": [
+    "BodyMesh",
+    "FaceMesh"
+  ],
+  "requiredNodes": [
+    "CharacterRoot",
+    "Skeleton3D",
+    "AnimationPlayer"
+  ],
+  "requiredSockets": {
+    "phone_grip_r": {
+      "boneName": "Hand_R",
+      "socket": "Grip_R/PhoneSocket",
+      "offsetState": "ARTIST_MUST_CALIBRATE"
+    },
+    "phone_grip_l": {
+      "boneName": "Hand_L",
+      "socket": "Grip_L/PhoneSocket",
+      "offsetState": "ARTIST_MUST_CALIBRATE"
+    },
+    "mug_grip_r": {
+      "boneName": "Hand_R",
+      "socket": "Grip_R/MugSocket",
+      "offsetState": "ARTIST_MUST_CALIBRATE"
+    }
+  },
+  "stageSockets": {
+    "table_phone_rest": "ApartmentNook/PropAnchors/TablePhoneRest",
+    "drawer_phone_rest": "ApartmentNook/PropAnchors/DrawerPhoneRest",
+    "mug_rest": "ApartmentNook/PropAnchors/MugRest"
+  },
+  "checks": [
+    "skin bindings named and explicit",
+    "applied source transforms",
+    "consistent morph topology",
+    "no clipping through prop at capture frames",
+    "no random or physics-only motion in final render",
+    "SHA-256 verified staged GLB"
+  ]
+}

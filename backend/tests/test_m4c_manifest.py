@@ -199,8 +199,13 @@ def test_production_quality_is_blocked(client, jobs):
     seed(api)
     response = api.post(f"/api/projects/{PROJECT_ID}/render-manifests", json={"quality": "production", "allowProxy": True})
     assert response.status_code == 422, response.text
+    assert "will not fall back to previs" in response.text
     assert "DRAFT_UNMAPPED" in response.text
     assert "M4-D/E" in response.text
+    assert "40-bone rig" in response.text
+    assert "22 facial blend shapes" in response.text
+    assert "34 action mappings" in response.text
+    assert "lighting profiles" in response.text
     assert list(jobs.glob("*")) == []
 
 

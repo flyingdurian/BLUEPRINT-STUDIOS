@@ -1,0 +1,488 @@
+{
+  "schemaVersion": "blueprint.shotstageplan.v1",
+  "status": "AUTHORING_EXAMPLE_NOT_EXECUTABLE",
+  "source": "BS-M1 Pilot 1 screenplay seed, inspected 2026-11-02 (design-time main)",
+  "projectId": "blueprint-pilot-01",
+  "episodeTitle": "Congratulations, You're the Organizer",
+  "fps": 30,
+  "totalFrames": 2490,
+  "targetAspect": "9:16",
+  "stagePlanPolicy": "Action IDs and camera presets are proposals: none is claimed registered in Godot. Artist review is mandatory.",
+  "shots": [
+    {
+      "shotId": "shot-001",
+      "code": "SH_001",
+      "startFrame": 0,
+      "durationFrames": 120,
+      "endFrameExclusive": 120,
+      "narration": "You finally mute the family group chat. Freedom.",
+      "setKey": "apartment_nook",
+      "camera": {
+        "preset": "medium_three_quarter",
+        "changeMode": "hard_cut",
+        "movement": "authored_in_godot_preset"
+      },
+      "performance": {
+        "actionIds": [
+          "thumb_mute",
+          "relief_exhale"
+        ],
+        "requiredBindings": [
+          "lead_actor"
+        ],
+        "status": "DRAFT_UNMAPPED"
+      },
+      "overlayCue": "mute_notification_overlay",
+      "visualBeatFrameHint": 24,
+      "linkedAssetIds": [
+        "ast-lead",
+        "ast-apartment",
+        "ast-phone",
+        "ast-chat"
+      ],
+      "stageApproval": "PENDING",
+      "fallback": "APPROVED_PROXY_ONLY_FOR_PREVIS"
+    },
+    {
+      "shotId": "shot-002",
+      "code": "SH_002",
+      "startFrame": 120,
+      "durationFrames": 180,
+      "endFrameExclusive": 300,
+      "narration": "For eleven beautiful minutes, nobody asks if you're coming to Sunday dinner.",
+      "setKey": "apartment_nook",
+      "camera": {
+        "preset": "wide_profile",
+        "changeMode": "hard_cut",
+        "movement": "authored_in_godot_preset"
+      },
+      "performance": {
+        "actionIds": [
+          "mug_sip",
+          "calm_exhale"
+        ],
+        "requiredBindings": [
+          "lead_actor"
+        ],
+        "status": "DRAFT_UNMAPPED"
+      },
+      "overlayCue": "eleven_min_clock_jump",
+      "visualBeatFrameHint": 60,
+      "linkedAssetIds": [
+        "ast-lead",
+        "ast-apartment",
+        "ast-phone",
+        "ast-mug"
+      ],
+      "stageApproval": "PENDING",
+      "fallback": "APPROVED_PROXY_ONLY_FOR_PREVIS"
+    },
+    {
+      "shotId": "shot-003",
+      "code": "SH_003",
+      "startFrame": 300,
+      "durationFrames": 150,
+      "endFrameExclusive": 450,
+      "narration": "Then your aunt calls. Calls, apparently, were not part of the treaty.",
+      "setKey": "phone_insert",
+      "camera": {
+        "preset": "phone_extreme_closeup",
+        "changeMode": "hard_cut",
+        "movement": "authored_in_godot_preset"
+      },
+      "performance": {
+        "actionIds": [
+          "finger_hesitation",
+          "suspicious_eye"
+        ],
+        "requiredBindings": [
+          "lead_actor"
+        ],
+        "status": "DRAFT_UNMAPPED"
+      },
+      "overlayCue": "incoming_aunt_call",
+      "visualBeatFrameHint": 38,
+      "linkedAssetIds": [
+        "ast-lead",
+        "ast-phone",
+        "ast-chat",
+        "ast-aunt"
+      ],
+      "stageApproval": "PENDING",
+      "fallback": "APPROVED_PROXY_ONLY_FOR_PREVIS"
+    },
+    {
+      "shotId": "shot-004",
+      "code": "SH_004",
+      "startFrame": 450,
+      "durationFrames": 150,
+      "endFrameExclusive": 600,
+      "narration": "She asks why you've ignored eighty-three messages. You say you were busy.",
+      "setKey": "apartment_nook",
+      "camera": {
+        "preset": "medium_front",
+        "changeMode": "hard_cut",
+        "movement": "authored_in_godot_preset"
+      },
+      "performance": {
+        "actionIds": [
+          "polite_smile",
+          "defensive_palm",
+          "smile_collapse"
+        ],
+        "requiredBindings": [
+          "lead_actor"
+        ],
+        "status": "DRAFT_UNMAPPED"
+      },
+      "overlayCue": "notifications_to_83",
+      "visualBeatFrameHint": 58,
+      "linkedAssetIds": [
+        "ast-lead",
+        "ast-phone",
+        "ast-chat"
+      ],
+      "stageApproval": "PENDING",
+      "fallback": "APPROVED_PROXY_ONLY_FOR_PREVIS"
+    },
+    {
+      "shotId": "shot-005",
+      "code": "SH_005",
+      "startFrame": 600,
+      "durationFrames": 180,
+      "endFrameExclusive": 780,
+      "narration": "Busy doing what? You look at your tea. It's suddenly a private matter.",
+      "setKey": "apartment_nook",
+      "camera": {
+        "preset": "tight_mug_reaction",
+        "changeMode": "hard_cut",
+        "movement": "authored_in_godot_preset"
+      },
+      "performance": {
+        "actionIds": [
+          "look_to_mug",
+          "shield_mug",
+          "side_eye"
+        ],
+        "requiredBindings": [
+          "lead_actor"
+        ],
+        "status": "DRAFT_UNMAPPED"
+      },
+      "overlayCue": "mug_secret_sfx",
+      "visualBeatFrameHint": 52,
+      "linkedAssetIds": [
+        "ast-lead",
+        "ast-phone",
+        "ast-mug",
+        "ast-apartment"
+      ],
+      "stageApproval": "PENDING",
+      "fallback": "APPROVED_PROXY_ONLY_FOR_PREVIS"
+    },
+    {
+      "shotId": "shot-006",
+      "code": "SH_006",
+      "startFrame": 780,
+      "durationFrames": 180,
+      "endFrameExclusive": 960,
+      "narration": "You promise to check the chat. There are seven restaurant options, three polls, and a fight about parking.",
+      "setKey": "phone_insert",
+      "camera": {
+        "preset": "over_shoulder_phone",
+        "changeMode": "hard_cut",
+        "movement": "authored_in_godot_preset"
+      },
+      "performance": {
+        "actionIds": [
+          "phone_scroll",
+          "abrupt_stop"
+        ],
+        "requiredBindings": [
+          "lead_actor"
+        ],
+        "status": "DRAFT_UNMAPPED"
+      },
+      "overlayCue": "restaurant_cards_poll_parking",
+      "visualBeatFrameHint": 66,
+      "linkedAssetIds": [
+        "ast-lead",
+        "ast-phone",
+        "ast-chat"
+      ],
+      "stageApproval": "PENDING",
+      "fallback": "APPROVED_PROXY_ONLY_FOR_PREVIS"
+    },
+    {
+      "shotId": "shot-007",
+      "code": "SH_007",
+      "startFrame": 960,
+      "durationFrames": 210,
+      "endFrameExclusive": 1170,
+      "narration": "You don't care which restaurant wins. You type the safest sentence in history: 'Anything works for me.'",
+      "setKey": "apartment_nook",
+      "camera": {
+        "preset": "medium_phone_foreground",
+        "changeMode": "hard_cut",
+        "movement": "authored_in_godot_preset"
+      },
+      "performance": {
+        "actionIds": [
+          "deliberate_type",
+          "tiny_confident_smile"
+        ],
+        "requiredBindings": [
+          "lead_actor"
+        ],
+        "status": "DRAFT_UNMAPPED"
+      },
+      "overlayCue": "send_anything_works_for_me",
+      "visualBeatFrameHint": 130,
+      "linkedAssetIds": [
+        "ast-lead",
+        "ast-phone",
+        "ast-chat"
+      ],
+      "stageApproval": "PENDING",
+      "fallback": "APPROVED_PROXY_ONLY_FOR_PREVIS"
+    },
+    {
+      "shotId": "shot-008",
+      "code": "SH_008",
+      "startFrame": 1170,
+      "durationFrames": 210,
+      "endFrameExclusive": 1380,
+      "narration": "Beautiful. Neutral. Not a single opinion anyone could argue with. You put the phone down.",
+      "setKey": "apartment_nook",
+      "camera": {
+        "preset": "symmetric_wide",
+        "changeMode": "hard_cut",
+        "movement": "authored_in_godot_preset"
+      },
+      "performance": {
+        "actionIds": [
+          "put_down_phone",
+          "recline",
+          "victory_still"
+        ],
+        "requiredBindings": [
+          "lead_actor"
+        ],
+        "status": "DRAFT_UNMAPPED"
+      },
+      "overlayCue": "quiet_false_ending",
+      "visualBeatFrameHint": 168,
+      "linkedAssetIds": [
+        "ast-lead",
+        "ast-phone",
+        "ast-apartment"
+      ],
+      "stageApproval": "PENDING",
+      "fallback": "APPROVED_PROXY_ONLY_FOR_PREVIS"
+    },
+    {
+      "shotId": "shot-009",
+      "code": "SH_009",
+      "startFrame": 1380,
+      "durationFrames": 180,
+      "endFrameExclusive": 1560,
+      "narration": "Then your aunt calls again. 'Perfect! Since you don't mind, can you call all seven places?'",
+      "setKey": "apartment_nook",
+      "camera": {
+        "preset": "split_call",
+        "changeMode": "hard_cut",
+        "movement": "authored_in_godot_preset"
+      },
+      "performance": {
+        "actionIds": [
+          "auto_polite_nod",
+          "freeze_mid_nod"
+        ],
+        "requiredBindings": [
+          "lead_actor"
+        ],
+        "status": "DRAFT_UNMAPPED"
+      },
+      "overlayCue": "aunt_call_avatar_panel",
+      "visualBeatFrameHint": 104,
+      "linkedAssetIds": [
+        "ast-lead",
+        "ast-phone",
+        "ast-aunt",
+        "ast-chat"
+      ],
+      "stageApproval": "PENDING",
+      "fallback": "APPROVED_PROXY_ONLY_FOR_PREVIS"
+    },
+    {
+      "shotId": "shot-010",
+      "code": "SH_010",
+      "startFrame": 1560,
+      "durationFrames": 180,
+      "endFrameExclusive": 1740,
+      "narration": "You're now checking table sizes, allergies, and whether Uncle Ray needs a quiet corner.",
+      "setKey": "host_desk_cutaway",
+      "camera": {
+        "preset": "cutaway_wide_reveal",
+        "changeMode": "hard_cut",
+        "movement": "authored_in_godot_preset"
+      },
+      "performance": {
+        "actionIds": [
+          "answer_phone",
+          "stamp_papers",
+          "panic_head_swivel"
+        ],
+        "requiredBindings": [
+          "lead_actor"
+        ],
+        "status": "DRAFT_UNMAPPED"
+      },
+      "overlayCue": "seven_ringing_phones",
+      "visualBeatFrameHint": 75,
+      "linkedAssetIds": [
+        "ast-lead",
+        "ast-restaurant",
+        "ast-phone"
+      ],
+      "stageApproval": "PENDING",
+      "fallback": "APPROVED_PROXY_ONLY_FOR_PREVIS"
+    },
+    {
+      "shotId": "shot-011",
+      "code": "SH_011",
+      "startFrame": 1740,
+      "durationFrames": 180,
+      "endFrameExclusive": 1920,
+      "narration": "The group chat starts thanking you. You have made exactly one contribution.",
+      "setKey": "apartment_nook",
+      "camera": {
+        "preset": "medium_deadpan",
+        "changeMode": "hard_cut",
+        "movement": "authored_in_godot_preset"
+      },
+      "performance": {
+        "actionIds": [
+          "deadpan_stare",
+          "thankyou_eyebrow_bounce"
+        ],
+        "requiredBindings": [
+          "lead_actor"
+        ],
+        "status": "DRAFT_UNMAPPED"
+      },
+      "overlayCue": "thank_you_bubble_cascade",
+      "visualBeatFrameHint": 68,
+      "linkedAssetIds": [
+        "ast-lead",
+        "ast-phone",
+        "ast-chat"
+      ],
+      "stageApproval": "PENDING",
+      "fallback": "APPROVED_PROXY_ONLY_FOR_PREVIS"
+    },
+    {
+      "shotId": "shot-012",
+      "code": "SH_012",
+      "startFrame": 1920,
+      "durationFrames": 210,
+      "endFrameExclusive": 2130,
+      "narration": "You try to say you can't organize. Someone replies, 'No stress, just do your best.' That's somehow worse.",
+      "setKey": "phone_insert",
+      "camera": {
+        "preset": "over_shoulder_then_reaction",
+        "changeMode": "hard_cut",
+        "movement": "authored_in_godot_preset"
+      },
+      "performance": {
+        "actionIds": [
+          "type_refusal",
+          "thumb_freeze",
+          "slump"
+        ],
+        "requiredBindings": [
+          "lead_actor"
+        ],
+        "status": "DRAFT_UNMAPPED"
+      },
+      "overlayCue": "no_stress_reply",
+      "visualBeatFrameHint": 102,
+      "linkedAssetIds": [
+        "ast-lead",
+        "ast-phone",
+        "ast-chat"
+      ],
+      "stageApproval": "PENDING",
+      "fallback": "APPROVED_PROXY_ONLY_FOR_PREVIS"
+    },
+    {
+      "shotId": "shot-013",
+      "code": "SH_013",
+      "startFrame": 2130,
+      "durationFrames": 180,
+      "endFrameExclusive": 2310,
+      "narration": "You muted the group chat to avoid planning dinner.",
+      "setKey": "apartment_nook",
+      "camera": {
+        "preset": "drawer_closeup",
+        "changeMode": "hard_cut",
+        "movement": "authored_in_godot_preset"
+      },
+      "performance": {
+        "actionIds": [
+          "put_phone_in_drawer",
+          "gentle_close"
+        ],
+        "requiredBindings": [
+          "lead_actor"
+        ],
+        "status": "DRAFT_UNMAPPED"
+      },
+      "overlayCue": "group_name_changed",
+      "visualBeatFrameHint": 135,
+      "linkedAssetIds": [
+        "ast-lead",
+        "ast-phone",
+        "ast-drawer",
+        "ast-apartment"
+      ],
+      "stageApproval": "PENDING",
+      "fallback": "APPROVED_PROXY_ONLY_FOR_PREVIS"
+    },
+    {
+      "shotId": "shot-014",
+      "code": "SH_014",
+      "startFrame": 2310,
+      "durationFrames": 180,
+      "endFrameExclusive": 2490,
+      "narration": "Congratulations. You're now running it. And you're not even hungry.",
+      "setKey": "apartment_nook",
+      "camera": {
+        "preset": "medium_to_wide",
+        "changeMode": "hard_cut",
+        "movement": "authored_in_godot_preset"
+      },
+      "performance": {
+        "actionIds": [
+          "coordinator_badge_reveal",
+          "deadpan",
+          "cut_black"
+        ],
+        "requiredBindings": [
+          "lead_actor"
+        ],
+        "status": "DRAFT_UNMAPPED"
+      },
+      "overlayCue": "dinner_coordinator_badge",
+      "visualBeatFrameHint": 75,
+      "linkedAssetIds": [
+        "ast-lead",
+        "ast-apartment",
+        "ast-badge",
+        "ast-drawer"
+      ],
+      "stageApproval": "PENDING",
+      "fallback": "APPROVED_PROXY_ONLY_FOR_PREVIS"
+    }
+  ]
+}

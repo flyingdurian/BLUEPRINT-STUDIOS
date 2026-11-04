@@ -66,7 +66,7 @@ def compile_render_manifest(db: Session, project_id: str, *, quality: str = "pre
     if quality not in {"previs", "production"}:
         raise ManifestCompileError("Quality must be previs or production")
     plan_file = plan_path or default_plan_path()
-    plan, plan_sha = _load_plan(plan_file)
+    plan, plan_sha = _load_plan(plan_file, quality=quality)
     project = db.get(m.Project, project_id)
     if project is None:
         raise ManifestCompileError("Project not found", 404)
@@ -75,7 +75,9 @@ def compile_render_manifest(db: Session, project_id: str, *, quality: str = "pre
     shots = list(db.scalars(select(m.Shot).where(m.Shot.project_id == project_id).order_by(m.Shot.start_frame)))
     _assert_database_matches_plan(db, project_id, shots, plan)
     if quality == "production":
-        raise ManifestCompileError(_production_block_reason(plan))
+        planned_by_id = {item["shotId"]: item for item in plan["shots"]}
+        resolved = [_resolve_shot(db, shot, planned_by_id[shot.id]) for shot in _ordered(shots)]
+        raise ManifestCompileError(_production_block_reason(plan, allow_proxy=allow_proxy, resolved=resolved))
     if quality == "previs" and not allow_proxy:
         # Checked again per asset so a missing file cannot be silently omitted.
         pass
@@ -146,7 +148,7 @@ def _canonical_bytes(payload: dict) -> bytes:
     return (json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False) + "\n").encode("utf-8")
 
 
-def _load_plan(path: Path) -> tuple[dict, str]:
+def _load_plan(path: Path, *, quality: str = "previs") -> tuple[dict, str]:
     try:
         raw = path.read_bytes()
     except OSError as exc:
@@ -177,7 +179,7 @@ def _load_plan(path: Path) -> tuple[dict, str]:
         if start != cursor or duration < 1 or end != start + duration:
             raise ManifestCompileError("Stage plan shots overlap, leave a gap, or disagree with their durations")
         performance = shot.get("performance") or {}
-        if performance.get("status") != "DRAFT_UNMAPPED":
+        if quality != "production" and performance.get("status") != "DRAFT_UNMAPPED":
             raise ManifestCompileError("Only the draft stage plan can be frozen by this compiler")
         cursor = end
     if cursor != TOTAL_FRAMES:
@@ -186,12 +188,74 @@ def _load_plan(path: Path) -> tuple[dict, str]:
     return plan, digest
 
 
-def _production_block_reason(plan: dict) -> str:
-    approvals = {shot.get("stageApproval") for shot in plan["shots"]}
+def production_manifest_blockers(plan: dict, resolved: list[dict] | None = None) -> list[str]:
+    """Reasons a production manifest must not be written. Previs jobs do not call this."""
+    root = Path(__file__).resolve().parents[3]
+    examples = root / "docs" / "examples"
+    godot = root / "godot_render"
+    blockers: list[str] = []
+    approvals = {str(shot.get("stageApproval")) for shot in plan.get("shots", [])}
+    if approvals != {"APPROVED"}:
+        blockers.append("stage approval is " + ", ".join(sorted(approvals)))
+    statuses = {str((shot.get("performance") or {}).get("status")) for shot in plan.get("shots", [])}
+    if statuses != {"READY"}:
+        blockers.append("performances are DRAFT_UNMAPPED" if "DRAFT_UNMAPPED" in statuses else "performances are not ready to execute")
+    action_ids = {
+        action
+        for shot in plan.get("shots", [])
+        for action in (shot.get("performance") or {}).get("actionIds", [])
+    }
+    bindings = json.loads((examples / "BS-M4E-ACTION-BINDINGS.json").read_text(encoding="utf-8"))
+    registry = bindings.get("actionRegistry", {})
+    if len(action_ids) != 34 or set(registry) != action_ids:
+        blockers.append(f"34 action mappings do not match the stage plan (found {len(action_ids)} ids)")
+    if bindings.get("status") != "AUTHORED" or any(spec.get("status") != "AUTHORED" for spec in registry.values()):
+        blockers.append("34 action mappings are unresolved registry names")
+    scene_path = godot / "actors" / "lead" / "ActorLead.tscn"
+    scene = scene_path.read_text(encoding="utf-8") if scene_path.is_file() else ""
+    if "AnimationLibrary" not in scene and 'type="Animation"' not in scene:
+        blockers.append("AnimationPlayer has no authored clips")
+    rig = json.loads((examples / "BS-M4E-RIG-CONTRACT.json").read_text(encoding="utf-8"))
+    bones = list(rig.get("requiredBones", []))
+    present = [name for name in bones if f'name = "{name}"' in scene]
+    if len(bones) != 40 or len(present) != 40:
+        blockers.append("40-bone rig is incomplete")
+    elif "TEST_DUMMY_NOT_APPROVED_ART" in scene:
+        blockers.append("40-bone rig is an unapproved dummy")
+    face = json.loads((examples / "BS-M4E-C-FACE-PRESETS-v2.json").read_text(encoding="utf-8"))
+    channels = [row.get("name") for row in face.get("channels", [])]
+    shapes_in_scene = len(channels) == 22 and all(name in scene for name in channels) and "BoxMesh_face" not in scene
+    if face.get("specStatus") != "ART_APPROVED" or not shapes_in_scene:
+        blockers.append("22 facial blend shapes are not imported")
+    lights = json.loads((examples / "BS-M4E-D-LIGHTING-PROFILES-v2.json").read_text(encoding="utf-8"))
+    profiles = set(lights.get("profiles", {}))
+    presets = {shot.get("lightingPreset") for shot in bindings.get("shots", [])}
+    if not presets or not presets <= profiles:
+        blockers.append("lighting profiles do not cover every shot")
+    if lights.get("specStatus") != "LOOKDEV_APPROVED":
+        blockers.append(f"lighting profiles are {lights.get('specStatus')}")
+    project_text = (godot / "project.godot").read_text(encoding="utf-8") if (godot / "project.godot").is_file() else ""
+    if 'renderer/rendering_method="forward_plus"' not in project_text:
+        blockers.append("production lighting is not resolved on Forward+")
+    verified_glb = [
+        asset
+        for shot in (resolved or [])
+        for asset in shot.get("assets", [])
+        if asset.get("verified") and asset.get("mediaType") == "model/gltf-binary"
+    ]
+    if resolved is not None and not verified_glb:
+        blockers.append("no verified protagonist GLB is pinned")
+    return blockers
+
+
+def _production_block_reason(plan: dict, *, allow_proxy: bool, resolved: list[dict]) -> str:
+    blockers = production_manifest_blockers(plan, resolved)
+    if allow_proxy:
+        blockers.insert(0, "allowProxy cannot unlock production")
     return (
-        "Production quality is blocked: stage approval is "
-        f"{', '.join(sorted(str(item) for item in approvals))}, performances are DRAFT_UNMAPPED, "
-        "and the M4-D/E rig-action and narration renderers are not part of this compiler"
+        "Production quality is blocked and will not fall back to previs: "
+        + "; ".join(blockers)
+        + ". The M4-D/E rig-action and narration renderers are unresolved"
     )
 
 

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blueprint-studios.local/schema/m4e-e-qc-evidence-v1",
+  "title": "Blueprint Studios M4E-E Godot production evidence (preflight and frame trace)",
+  "description": "Design-time JSON Schema. Godot must emit actual evidence; never fabricate records from a stage plan.",
+  "$defs": {
+    "sha256": {"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "enginePreflight": {
+      "type":"object",
+      "required": ["schemaVersion","manifestSha256","engineVersion","rigSha256","rigStatus","boneNames","blendShapeNames","executableActionIds","cameraPresets","skeletonBindingsOk","socketsCalibrated","surfacesValidated","texturesValidated","materialErrors","missingTextures","socketErrors","importErrors","sceneWarnings"],
+      "properties": {
+        "schemaVersion": {"const":"blueprint.engine-preflight.v1"},
+        "manifestSha256": {"$ref":"#/$defs/sha256"},
+        "engineVersion": {"type":"string","pattern":"^4\\.7\\.2"},
+        "rigSha256": {"$ref":"#/$defs/sha256"},
+        "rigStatus": {"enum":["OWNER_APPROVED","PENDING","REJECTED"]},
+        "boneNames": {"type":"array","minItems":40,"items":{"type":"string"},"uniqueItems":true},
+        "blendShapeNames": {"type":"array","minItems":22,"items":{"type":"string"},"uniqueItems":true},
+        "executableActionIds": {"type":"array","minItems":34,"items":{"type":"string"},"uniqueItems":true},
+        "cameraPresets": {"type":"array","minItems":14,"items":{"type":"string"},"uniqueItems":true},
+        "skeletonBindingsOk": {"type":"boolean"},
+        "socketsCalibrated": {"type":"boolean"},
+        "surfacesValidated": {"type":"integer","minimum":0},
+        "texturesValidated": {"type":"integer","minimum":0},
+        "materialErrors": {"type":"array","items":{"type":"string"}},
+        "missingTextures": {"type":"array","items":{"type":"string"}},
+        "socketErrors": {"type":"array","items":{"type":"string"}},
+        "importErrors": {"type":"array","items":{"type":"string"}},
+        "sceneWarnings": {"type":"array","items":{"type":"string"}}
+      },
+      "additionalProperties": true
+    },
+    "frameTelemetry": {
+      "type":"object",
+      "required":["frame","shotId","cameraPreset","faceChannelCount","startedActions","socketErrors","materialErrors","missingTextures"],
+      "properties": {
+        "frame":{"type":"integer","minimum":0,"maximum":2489},
+        "shotId":{"type":"string"},
+        "cameraPreset":{"type":"string"},
+        "faceChannelCount":{"const":22},
+        "startedActions":{"type":"array","items":{"type":"string"}},
+        "socketErrors":{"type":"array","items":{"type":"string"}},
+        "materialErrors":{"type":"array","items":{"type":"string"}},
+        "missingTextures":{"type":"array","items":{"type":"string"}},
+        "poseChecksum":{"type":"string"},
+        "cameraChecksum":{"type":"string"}
+      },
+      "additionalProperties": true
+    }
+  }
+}
